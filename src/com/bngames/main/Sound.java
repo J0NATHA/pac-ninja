@@ -11,34 +11,43 @@ public class Sound {
 		private int count;
 		
 		public Clips(byte[] buffer, int count) throws LineUnavailableException, IOException, UnsupportedAudioFileException{
+		    try
+		    {
 			if(buffer == null)
-				return;
-			
+			    return;
+
 			clips = new Clip[count];
 			this.count= count;
-			
-			for(int i =0; i<count; i++) {
-				clips[i] = AudioSystem.getClip();
-				clips[i].open(AudioSystem.getAudioInputStream(new ByteArrayInputStream(buffer)));
+
+			for(int i =0; i<count; i++) 
+			{
+			    clips[i] = AudioSystem.getClip();
+			    clips[i].open(AudioSystem.getAudioInputStream(new ByteArrayInputStream(buffer)));
 			}
+		    }
+		    finally {}
 		}
 		
 		public void play() {
-			if (clips==null) return;
+		    if (clips==null) return;
+		    try 
+		    {
 			clips[p].stop();
 			clips[p].setFramePosition(0);
 			clips[p].start();
 			p++;
 			if(p>=count) p=0;
+		    }
+		    finally {}
 		}
 		
 		public void loop() {
-			if(clips==null) return;
-			clips[p].loop(300);
+		    if(clips==null) return;
+		    clips[p].loop(300);
 		}
-		
+
 		public void terminate() {
-			clips[p].stop();
+		    clips[p].stop();
 		}
 	}
 
