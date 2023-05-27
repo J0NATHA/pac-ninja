@@ -1,7 +1,14 @@
 package com.bngames.main;
 
-import java.io.*;
-import javax.sound.sampled.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
+
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 
 public class Sound {
 
@@ -11,43 +18,34 @@ public class Sound {
 		private int count;
 		
 		public Clips(byte[] buffer, int count) throws LineUnavailableException, IOException, UnsupportedAudioFileException{
-		    try
-		    {
 			if(buffer == null)
-			    return;
-
+				return;
+			
 			clips = new Clip[count];
 			this.count= count;
-
-			for(int i =0; i<count; i++) 
-			{
-			    clips[i] = AudioSystem.getClip();
-			    clips[i].open(AudioSystem.getAudioInputStream(new ByteArrayInputStream(buffer)));
+			
+			for(int i =0; i<count; i++) {
+				clips[i] = AudioSystem.getClip();
+				clips[i].open(AudioSystem.getAudioInputStream(new ByteArrayInputStream(buffer)));
 			}
-		    }
-		    finally {}
 		}
 		
 		public void play() {
-		    if (clips==null) return;
-		    try 
-		    {
+			if (clips==null) return;
 			clips[p].stop();
 			clips[p].setFramePosition(0);
 			clips[p].start();
 			p++;
 			if(p>=count) p=0;
-		    }
-		    finally {}
 		}
 		
 		public void loop() {
-		    if(clips==null) return;
-		    clips[p].loop(300);
+			if(clips==null) return;
+			clips[p].loop(300);
 		}
-
+		
 		public void terminate() {
-		    clips[p].stop();
+			clips[p].stop();
 		}
 	}
 

@@ -1,6 +1,5 @@
 package com.bngames.entities;
 
-import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
@@ -9,8 +8,6 @@ import java.util.List;
 import java.util.Random;
 
 import com.bngames.main.Game;
-import com.bngames.main.Sound;
-import com.bngames.world.AStar;
 import com.bngames.world.Camera;
 import com.bngames.world.Node;
 import com.bngames.world.Vector2i;

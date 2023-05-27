@@ -1,7 +1,6 @@
 package com.bngames.entities;
 
 
-import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
@@ -12,7 +11,6 @@ import com.bngames.main.Sound;
 import com.bngames.world.AStar;
 import com.bngames.world.Camera;
 import com.bngames.world.Vector2i;
-import com.bngames.world.World;
 
 public class Enemy2 extends Entity{
 	

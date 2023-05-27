@@ -8,10 +8,16 @@ import java.util.Random;
 
 import javax.imageio.ImageIO;
 
-import com.bngames.entities.*;
+import com.bngames.entities.Enemy;
+import com.bngames.entities.Enemy2;
+import com.bngames.entities.Entity;
+import com.bngames.entities.Particle;
+import com.bngames.entities.Particle2;
+import com.bngames.entities.Player;
+import com.bngames.entities.Red;
+import com.bngames.entities.Tree;
 import com.bngames.graficos.Spritesheet;
 import com.bngames.main.Game;
-import com.bngames.main.Sound;
 
 public class World {
 

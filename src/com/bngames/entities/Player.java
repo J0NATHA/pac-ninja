@@ -4,11 +4,8 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Random;
 
-import com.bngames.graficos.Spritesheet;
 import com.bngames.graficos.UI;
 import com.bngames.main.Game;
 import com.bngames.main.Sound;
@@ -22,7 +19,7 @@ public class Player extends Entity {
 	
 	public int Pmaskx=-3, Pmasky=0, Pmaskh=16, Pmaskw=10, blackoutFrames=0;
 	public boolean right,up,left,down, changedDir=false, isDamaged=false,hitOnce=false, sneak=false;
-	public static boolean growIt=false;
+	public static boolean growIt=false, superHealth;
 	public int frames=0, index=0, maxIndex=4, maxFrames=10, lastDir=0, orbFrames=0, orbIndex=0, orbMax=3, invFrames=0;
 	public int rectTime=0, rectMax=25;
 	public int life=2, soundFrames=0;
@@ -33,10 +30,10 @@ public class Player extends Entity {
 	public Player(int x, int y, int width, int height, int speed,  BufferedImage sprite) {
 		super(x, y, width, height, speed ,sprite);
 		wallHold= new BufferedImage[4];
-				wallHold[0]	=Game.spritesheet.getSprite(48, 96, 16, 16);
-				wallHold[1]	=Game.spritesheet.getSprite(48, 80, 16, 16);
-				wallHold[2]	=Game.spritesheet.getSprite(32, 96, 16, 16);
-				wallHold[3]	=Game.spritesheet.getSprite(32, 80, 16, 16);
+		wallHold[0]	=Game.spritesheet.getSprite(48, 96, 16, 16);
+		wallHold[1]	=Game.spritesheet.getSprite(48, 80, 16, 16);
+		wallHold[2]	=Game.spritesheet.getSprite(32, 96, 16, 16);
+		wallHold[3]	=Game.spritesheet.getSprite(32, 80, 16, 16);
 	
 		 upDir=new BufferedImage[4];
 		 upDir[0]= Game.spritesheet.getSprite(65, 48, 14, 16);
@@ -70,12 +67,19 @@ public class Player extends Entity {
 			
 	}	
 	
+	public boolean hasSuperHealth()
+	{
+		return superHealth;
+	}
 
 	public void tick() {
-		
 		depth=1;
 		updateCamera();
 		
+		if (hasSuperHealth())
+		{
+			superHealth();
+		}
 		if (!isDamaged){
 			if(sneak) {
 				speed=0.2;
@@ -117,6 +121,11 @@ public class Player extends Entity {
 	
 	
 		if(isDamaged) {
+			if(hasSuperHealth())
+			{
+				superHealth = false;
+				life = 2;
+			}
 			invFrames++;
 			if(invFrames<30) {
 				speed=3;
@@ -140,6 +149,11 @@ public class Player extends Entity {
 		
 	}
 	
+	public void superHealth()
+	{
+		this.life = 3;
+	}
+	
 	public void getOrb() {
 		for(int i = 0; i<Game.entities.size(); i++) {
 			Entity current = Game.entities.get(i);
@@ -149,22 +163,20 @@ public class Player extends Entity {
 					Game.orbAtual++;
 					Sound.pickup.play();
 					if(Game.orbsPicked<20) {
-					Game.orbsPicked++;
-					if(Game.CUR_LEVEL==6) {
-						if(new Random().nextInt(100)<35) {
-							if(Game.bossTimer>1) {
-						Game.bossTimer-=2;
-					
-							
+						Game.orbsPicked++;
+						if(Game.CUR_LEVEL==6) {
+							if(new Random().nextInt(100)<35) {
+								if(Game.bossTimer>1) {
+									Game.bossTimer-=2;
+								}
 							}
 						}
 					}
-					}
 					return;
-				}
 				}
 			}
 		}
+	}
 	
 	
 	
@@ -182,43 +194,45 @@ public class Player extends Entity {
 	
 	public void hitWall() {
 		if(hitOnce) {
-
-		Sound.hitwall.play();
-		
+			Sound.hitwall.play();
 			hitOnce=false;
-		
+		}
+	}
+		public void animateOrb() {
+			orbFrames++;
+			if(orbFrames==5) {
+				orbFrames=0;
+				if(orbIndex<2) {
+					orbIndex++;
+				}
+				else
+					World.generateParticle(5, (int)x+10, (int)y+10);
+			}
 		}
 		
-	}
-			public void animateOrb() {
-				orbFrames++;
-				if(orbFrames==5) {
-					orbFrames=0;
-					if(orbIndex<2) {
-					orbIndex++;
-					
-			}else
-				World.generateParticle(5, (int)x+10, (int)y+10);
-			}
-			}
-	
+		private void drawSuperHealth(Graphics g)
+		{
+			g.setColor(new Color(255, 255, 0, 150));
+			g.fillOval(Game.player.getX()-Camera.x-Game.player.Pmaskx-4, Game.player.getY()-Camera.y-3-Game.player.Pmasky, Game.player.Pmaskw+6, Game.player.Pmaskh+4);
+		}
+		
 		public void render(Graphics g) {
 			if(life>0) {
 			if(Game.gameState=="NORMAL" || Game.gameState=="GAME_OVER" || Game.gameState=="PAUSE"  ) {
-			if(growIt==false) {
-				if(lastDir==0)
-					g.drawImage(downDir[0], this.getX()- Camera.x,this.getY()-Camera.y, null);
-			if(lastDir==1) {
-				if(World.isFree((int)(x+speed), getY())) {
-					hitOnce=true;
-					animate();
-				g.drawImage(rightDir[index], this.getX()- Camera.x,this.getY()-Camera.y, null);
-				
-				}else {
-					g.drawImage(this.wallHold[0], this.getX()- Camera.x,this.getY()-Camera.y, null);
-					hitWall();
+				if(growIt==false) {
+					if(lastDir==0)
+						g.drawImage(downDir[0], this.getX()- Camera.x,this.getY()-Camera.y, null);
+					if(lastDir==1) {
+					if(World.isFree((int)(x+speed), getY())) {
+						hitOnce=true;
+						animate();
+					g.drawImage(rightDir[index], this.getX()- Camera.x,this.getY()-Camera.y, null);
 					
-				}
+					}else {
+						g.drawImage(this.wallHold[0], this.getX()- Camera.x,this.getY()-Camera.y, null);
+						hitWall();
+						
+					}
 				
 				
 				
@@ -264,6 +278,8 @@ public class Player extends Entity {
 				
 				
 			}
+				
+			if(hasSuperHealth()) drawSuperHealth(g);
 			
 			if(growIt ) {
 				rectTime++;
@@ -335,26 +351,25 @@ public class Player extends Entity {
 					y=30;
 				}
 					
-			if(lastDir==1) {
-				g.drawImage(rightDir[index], this.getX()- Camera.x,this.getY()-Camera.y, null);
-				}
-				
-			else if(lastDir==-1) {
-	
-				g.drawImage(leftDir[index], this.getX()- Camera.x,this.getY()-Camera.y, null);
-				
-			
-			}else if(lastDir==2) {
+				if(lastDir==1) {
+					g.drawImage(rightDir[index], this.getX()- Camera.x,this.getY()-Camera.y, null);
+					}
 					
-				g.drawImage(upDir[index], this.getX()- Camera.x,this.getY()-Camera.y, null);
+				else if(lastDir==-1) {
 		
-			}else if(lastDir==-2) {
+					g.drawImage(leftDir[index], this.getX()- Camera.x,this.getY()-Camera.y, null);
 					
-				g.drawImage(downDir[index], this.getX()- Camera.x,this.getY()-Camera.y, null);
+				
+				}else if(lastDir==2) {
+						
+					g.drawImage(upDir[index], this.getX()- Camera.x,this.getY()-Camera.y, null);
 			
-			
+				}else if(lastDir==-2) {
+						
+					g.drawImage(downDir[index], this.getX()- Camera.x,this.getY()-Camera.y, null);
+				
+				}
 			}
 		}
-		}
-		}
+	}
 

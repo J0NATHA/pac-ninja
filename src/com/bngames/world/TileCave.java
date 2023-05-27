@@ -1,9 +1,6 @@
 package com.bngames.world;
 
-import java.awt.Graphics;
 import java.awt.image.BufferedImage;
-
-import com.bngames.main.Game;
 
 public class TileCave extends Tile{
 
