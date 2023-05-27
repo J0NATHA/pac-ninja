@@ -626,7 +626,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		if(tut>=60) {
 		    tutCdown=false;
 		    Sound.keys.terminate();
-		    if(tutUp && tutDown && tutLeft && tutRight && tutBar) {
+		    if(tutUp && tutDown && tutLeft && tutRight && tutBar && tutShift) {
 			gameState="MENU";
 		    }
 		}
