@@ -7,7 +7,6 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -37,7 +36,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 	private static final long serialVersionUID = 1L;
 	public static JFrame frame;
 	private boolean isRunning=true, tutUp=false, tutDown=false, tutLeft=false,tutRight=false,
-			tutBar=false, tutShift, tutCdown=false,bossDmg=false, color=false;
+			tutBar=false, tutShift, tutCdown=false,color=false;
 	public static boolean randomize=false, hideSprite=false, spawnEnemies=false, restartGame=false;
 	private Thread thread;
 	public static final int WIDTH = 240;
@@ -49,7 +48,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 	private int MAX_LEVEL = 6;
 	public static int redFrames=0, bossTimer=0, bossTimerFrames=0, sceneFrames=0;
 	private int framesGameOver=0, bossFrames=0, randFrames=0;
-	private int blackoutFrames=0, dmgTime=0;
+	private int blackoutFrames=0;
 	private int space=0;
 	private int blackinFrames=0;
 	private int nextlvlFrames=0;
@@ -117,9 +116,6 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 	catch(IOException e ) {
 		e.printStackTrace();
 	}
-	
-	Toolkit toolkit = Toolkit.getDefaultToolkit();
-	Image image = toolkit.getImage(getClass().getResource("/icon.png"));
 	
 	frame.setIconImage(imagem);
 	frame.setAlwaysOnTop(true);
@@ -921,7 +917,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			
 			if(gameState=="NORMAL") {
 				if(orbsPicked==20) {
-					Game.player.growIt=true;
+					Player.growIt=true;
 				}
 			}
 
@@ -933,7 +929,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 				gameState = "SCENE1";
 			
 			if(gameState == "GAME_OVER") {
-				this.restartGame=true;
+				Game.restartGame=true;
 			}
 		}
 		
@@ -980,7 +976,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			gameState="SCENE1";
 		
 		if(gameState=="GAME_OVER") {
-			this.restartGame=true;
+			Game.restartGame=true;
 		}
 	}
 

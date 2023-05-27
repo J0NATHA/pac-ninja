@@ -11,7 +11,7 @@ import com.bngames.world.Camera;
 
 public class Red extends Entity {
 	
-	private int aFrames=0, aIndex=0, randFrames=0, firstFrames=0;
+	private int aFrames=0, aIndex=0;
 	
 	private boolean go=true, back=false;
 	public  boolean damage=false;

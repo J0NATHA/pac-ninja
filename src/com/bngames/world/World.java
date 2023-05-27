@@ -97,7 +97,7 @@ public class World {
 						
 						}
 						else if(Game.CUR_LEVEL==6 && Game.spawnEnemies==true) {
-							if(Game.red.curLife==3 && Game.enemies.size()==0)  {
+							if(Red.curLife==3 && Game.enemies.size()==0)  {
 								if (new Random().nextInt(100)<50) {
 							Enemy en =new Enemy(xx*16,yy*16,16,16,1,Entity.ENEMY_EN);
 							Game.entities.add(en);
@@ -106,7 +106,7 @@ public class World {
 								if(Game.enemies.size()==1)
 									Game.spawnEnemies=false;
 						}
-						else if( Game.red.curLife==2 && Game.enemies.size()<2) { 
+						else if( Red.curLife==2 && Game.enemies.size()<2) { 
 								if (new Random().nextInt(100)<50)   {
 							Enemy en =new Enemy(xx*16,yy*16,16,16,1,Entity.ENEMY_EN);
 							Game.entities.add(en);
@@ -115,7 +115,7 @@ public class World {
 								if(Game.enemies.size()==2)
 									Game.spawnEnemies=false;
 						}
-						else if(Game.red.curLife==1 && Game.enemies.size()<2) {
+						else if(Red.curLife==1 && Game.enemies.size()<2) {
 							if (new Random().nextInt(100)<50)   {
 							Enemy en =new Enemy(xx*16,yy*16,16,16,1,Entity.ENEMY_EN);
 							Game.entities.add(en);

@@ -5,6 +5,8 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 
+import com.bngames.entities.Player;
+import com.bngames.entities.Red;
 import com.bngames.main.Game;
 
 public class UI {
@@ -33,11 +35,11 @@ public class UI {
 	public void renderBoss(Graphics g) {
 		if(Game.CUR_LEVEL==6) {
 			g.setColor(Color.black);
-			g.drawRoundRect(44, 9, Game.red.redLife*30+1, 10, 2, 2);
+			g.drawRoundRect(44, 9, Red.redLife*30+1, 10, 2, 2);
 			g.setColor(Color.red);
-			if(Game.player.growIt)
+			if(Player.growIt)
 				g.setColor(Color.green);
-			g.fillRoundRect(45, 10, Game.red.curLife*30, 9, 1, 1);
+			g.fillRoundRect(45, 10, Red.curLife*30, 9, 1, 1);
 			g.setColor(Color.black);
 
 			

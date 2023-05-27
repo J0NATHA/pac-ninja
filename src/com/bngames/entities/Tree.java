@@ -14,7 +14,6 @@ public class Tree extends Entity{
 	private boolean shine=false;
 	public Tree(double x, double y, int width, int height, double speed, BufferedImage sprite) {
 		super(x, y, width, height, speed, sprite);
-		// TODO Auto-generated constructor stub
 		depth=0;
 		
 		orb= new BufferedImage[6];

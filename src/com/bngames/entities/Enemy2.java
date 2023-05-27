@@ -15,7 +15,7 @@ import com.bngames.world.Vector2i;
 public class Enemy2 extends Entity{
 	
 	public  boolean  ghostMode2=false;
-	private int frames=0,maxFrames=5,index=0,maxIndex=3, ghostFrames2=0;
+	private int frames=0,maxFrames=5,index=0,maxIndex=3;
 	private int maskx=4, masky=2, maskw=7, maskh=13;
 	private BufferedImage[] sprites;
 
@@ -59,14 +59,6 @@ public class Enemy2 extends Entity{
 	public void tick() {
 		depth=0;
 
-		
-		int xPlayer = Game.player.getX();
-		int yPlayer = Game.player.getY();
-		
-		int xEnemy = (int)x;
-		int yEnemy = (int)y;
-		
-		
 		
 		chaseStart();
 		

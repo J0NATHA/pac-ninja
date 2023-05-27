@@ -12,7 +12,6 @@ import com.bngames.main.Sound;
 import com.bngames.world.Camera;
 import com.bngames.world.World;
 
-@SuppressWarnings("unused")
 public class Player extends Entity {
 	
 	public UI ui;
@@ -306,13 +305,13 @@ public class Player extends Entity {
 				}
 				}else {
 					if(Game.CUR_LEVEL==6 ) {
-						if(Game.red.curLife>1) {
+						if(Red.curLife>1) {
 					Game.randomize=true;
 						}
-						if(Game.red.curLife>0) {
+						if(Red.curLife>0) {
 					Sound.bossound3.play();
 					World.generateParticle2(200, Camera.x+10+(Red.curLife*30),Camera.y+15);
-					Game.red.curLife--;
+					Red.curLife--;
 						}
 					}
 				

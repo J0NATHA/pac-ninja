@@ -15,7 +15,7 @@ import com.bngames.world.Vector2i;
 public class Enemy extends Entity{
 	private int greenWait=0;
 	public  boolean ghostMode=false, startGhost=false;
-	private int frames=0, orbFrames=0, maxFrames=11, index=0,maxIndex=4, ghostFrames=0, nextTime = Entity.rand.nextInt(60*5 - 60*3) + 60*3;
+	private int frames=0, orbFrames=0, maxFrames=11, index=0,maxIndex=4, ghostFrames=0;
 	private BufferedImage[] sprites;
 	private double followRate = 1.0;
 	
@@ -58,12 +58,6 @@ public class Enemy extends Entity{
 		Game.enemies.clear();
 		Game.entities.clear();
 		}
-		
-		int xPlayer = Game.player.getX();
-		int yPlayer = Game.player.getY();
-		
-		int xEnemy = (int)x;
-		int yEnemy = (int)y;
 		
 		if(ghostMode==false)
 			chaseStart();

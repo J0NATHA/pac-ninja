@@ -5,5 +5,5 @@ module info
     exports com.bngames.main;
     exports com.bngames.world;
 
-    requires java.desktop;
+    requires transitive java.desktop;
 }
