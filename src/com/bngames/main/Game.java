@@ -901,21 +901,10 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			player.right=false;
 			
 			
-		}	
+		}
 		
-		if(e.getKeyCode()==KeyEvent.VK_SPACE) {
-			if(gameState=="TUT" && tutBar==false && tutCdown==false) {
-				Sound.keys.play();
-				tutCdown=true;
-				tutBar=true;
-			}
-			
-			if(gameState=="NORMAL") {
-				if(orbsPicked==20) {
-					Player.growIt=true;
-				}
-			}
-
+		if(e.getKeyCode() != 0)
+		{
 			if( gameState =="PAUSE") {
 				gameState= "NORMAL";
 				
@@ -928,8 +917,26 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			}
 		}
 		
-		if(e.getKeyCode() == KeyEvent.VK_SHIFT) {
-			if(gameState=="TUT" && !tutShift && !tutCdown) {
+		if(e.getKeyCode()==KeyEvent.VK_SPACE) {
+			if(gameState=="TUT" && tutBar==false && tutCdown==false) 
+			{
+				Sound.keys.play();
+				tutCdown=true;
+				tutBar=true;
+			}
+			
+			if(gameState=="NORMAL") 
+			{
+				if(orbsPicked==20) {
+					Player.growIt=true;
+				}
+			}
+		}
+		
+		if(e.getKeyCode() == KeyEvent.VK_SHIFT) 
+		{
+			if(gameState=="TUT" && !tutShift && !tutCdown) 
+			{
 				Sound.keys.play();
 				tutCdown=true;
 				tutShift=true;
