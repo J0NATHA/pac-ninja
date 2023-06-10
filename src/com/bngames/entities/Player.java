@@ -163,7 +163,7 @@ public class Player extends Entity {
 					Sound.pickup.play();
 					if(Game.orbsPicked<20) {
 						Game.orbsPicked++;
-						if(Game.CUR_LEVEL==6) {
+						if(Game.curLevel == 6) {
 							if(new Random().nextInt(100)<35) {
 								if(Game.bossTimer>1) {
 									Game.bossTimer-=2;
@@ -304,7 +304,7 @@ public class Player extends Entity {
 				g2.fillRect(0, 0, Game.WIDTH, Game.HEIGHT);
 				}
 				}else {
-					if(Game.CUR_LEVEL==6 ) {
+					if(Game.curLevel == 6 ) {
 						if(Red.curLife>1) {
 					Game.randomize=true;
 						}
@@ -331,7 +331,7 @@ public class Player extends Entity {
 		}
 			}
 			
-			if(life==1 && Game.CUR_LEVEL!=6) {
+			if(life==1 && Game.curLevel != 6) {
 				g.setColor(new Color(255,0,0,50));
 				g.fillRect(0, 0, Game.WIDTH, Game.HEIGHT);
 			

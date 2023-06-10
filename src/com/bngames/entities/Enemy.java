@@ -50,7 +50,7 @@ public class Enemy extends Entity{
 
 	public void tick() {
 		depth=0;
-		if (Game.CUR_LEVEL == 6 && Game.gameState == "NORMAL")
+		if (Game.curLevel == 6 && Game.gameState == "NORMAL")
 		{
 			bossBattleMode();
 		}

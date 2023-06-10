@@ -40,15 +40,15 @@ public class World {
 					for(int yy=0; yy<map.getHeight(); yy++) {
 					
 						int pixelAtual = pixels[xx+(yy*map.getWidth())];
-						if(Game.CUR_LEVEL<5)
+						if(Game.curLevel<5)
 						tiles[xx+(yy*WIDTH)]=new FloorTile(xx*16,yy*16,Tile.Tile_FLOOR);
-						else if(Game.CUR_LEVEL>=5)
+						else if(Game.curLevel>=5)
 							tiles[xx+(yy*WIDTH)]=new FloorTile(xx*16,yy*16,Tile.Tile_CAVE[0]);
 						if(pixelAtual==0xFF000000) {
 							//Ch�o
-							if(Game.CUR_LEVEL<5)
+							if(Game.curLevel<5)
 							tiles[xx+(yy*WIDTH)]=new FloorTile(xx*16,yy*16,Tile.Tile_FLOOR);
-							else if(Game.CUR_LEVEL>=5) {
+							else if(Game.curLevel>=5) {
 								if(new Random().nextInt(100)<50)
 								tiles[xx+(yy*WIDTH)]=new FloorTile(xx*16,yy*16,Tile.Tile_CAVE[0]);
 								else 
@@ -56,10 +56,10 @@ public class World {
 							}
 						}else if(pixelAtual==0xFFFFFFFF) {					
 // 						Parede
-							if(Game.CUR_LEVEL<5) {
+							if(Game.curLevel<5) {
 							tiles[xx+(yy*WIDTH)]=new WallTile(xx*16,yy*16,Tile.Tile_WALL);
 							}
-							else if(Game.CUR_LEVEL>=5) {
+							else if(Game.curLevel>=5) {
 								if(new Random().nextInt(100)<50)
 								tiles[xx+(yy*WIDTH)]=new WallTile(xx*16,yy*16,Tile.Tile_WALL2[0]);
 								else
@@ -77,12 +77,12 @@ public class World {
 					}
 					else if(pixelAtual==0xFF15FF00) {
 //						tree
-						if(Game.CUR_LEVEL!=6) {
+						if(Game.curLevel!=6) {
 					Tree tree = new Tree((xx*16)+3,(yy*16)+3, 8,8,0,Entity.TREE_SPRITE);
 					Game.entities.add(tree);
 					Game.orbContagem++;
 						}
-						else if(Game.CUR_LEVEL==6 && Game.orbContagem<20 && (new Random().nextInt(100)<50)) {
+						else if(Game.curLevel==6 && Game.orbContagem<20 && (new Random().nextInt(100)<50)) {
 							Tree tree = new Tree((xx*16)+3,(yy*16)+3, 8,8,0,Entity.TREE_SPRITE);
 							Game.entities.add(tree);
 							Game.orbContagem++;
@@ -91,12 +91,12 @@ public class World {
 					}
 					else if(pixelAtual==0xFFCB0002) {
 //						Inimigo
-						if(Game.CUR_LEVEL!=6) {
+						if(Game.curLevel!=6) {
 						Enemy en =new Enemy(xx*16,yy*16,16,16,1,Entity.ENEMY_EN);
 						Game.entities.add(en);
 						
 						}
-						else if(Game.CUR_LEVEL==6 && Game.spawnEnemies==true) {
+						else if(Game.curLevel==6 && Game.spawnEnemies==true) {
 							if(Red.curLife==3 && Game.enemies.size()==0)  {
 								if (new Random().nextInt(100)<50) {
 							Enemy en =new Enemy(xx*16,yy*16,16,16,1,Entity.ENEMY_EN);
@@ -140,7 +140,7 @@ public class World {
 						
 						
 						
-						if(Game.CUR_LEVEL==6) {
+						if(Game.curLevel==6) {
 							if(new Random().nextInt(100)<50) {
 								if(pixelAtual==0xFFB200FF) {
 									if(new Random().nextInt(100)<50)

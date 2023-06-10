@@ -14,7 +14,7 @@ public class UI {
 	public BufferedImage orb =  (Game.spritesheet.getSprite(67, 3, 8, 8));	
 
 	public void render(Graphics g) {
-		if(Game.CUR_LEVEL !=6) {
+		if(Game.curLevel !=6) {
 			g.setColor(Color.white);
 			g.setFont(new Font("arial", Font.BOLD, 16));
 			g.drawString(Game.orbAtual +" / "+ Game.orbContagem, 360, 28);
@@ -33,7 +33,7 @@ public class UI {
 	}
 	
 	public void renderBoss(Graphics g) {
-		if(Game.CUR_LEVEL==6) {
+		if(Game.curLevel==6) {
 			g.setColor(Color.black);
 			g.drawRoundRect(44, 9, Red.redLife*30+1, 10, 2, 2);
 			g.setColor(Color.red);
@@ -52,7 +52,7 @@ public class UI {
 	}
 	
 	public void drawBossAtk(Graphics g) {
-		if(Game.CUR_LEVEL==6 && Game.gameState=="NORMAL") {
+		if(Game.curLevel==6 && Game.gameState=="NORMAL") {
 		g.setColor(new Color(200,10,40));
 		g.fillRoundRect(158, 645, Game.bossTimer*20, 24, 3, 3);
 		g.setColor(Color.orange);

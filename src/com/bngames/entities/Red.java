@@ -32,38 +32,23 @@ public class Red extends Entity {
 		
 		
 	}
-	public void tick() {		
+	public void tick() 
+	{		
 		
 		
-		if(isCollidingWithPlayer() && Game.player.isDamaged==false) {
-			Game.player.isDamaged=true;
-			Game.player.life--;
-			Sound.hit.play();
-		}
-		
-		
-			if(Player.growIt) {
-				if(Game.orbsPicked>0) {
-					Game.orbsPicked--;
-			}
-			}
+	if(isCollidingWithPlayer() && Game.player.isDamaged==false) {
+		Game.player.isDamaged=true;
+		Game.player.life--;
+		Sound.hit.play();
+	}
 
-	
+	if(Player.growIt) {
+		if(Game.orbsPicked>0) {
+			Game.orbsPicked--;
+		}
+	}
 			
-			
-			
-			
-			}
-			
-			
-			
-		
-			
-			
-		
-		
-		
-	
+	}
 	
 	public boolean isCollidingWithPlayer() {
 		Rectangle enemyCurrent = new Rectangle(this.getX()-curLife*3-1 , this.getY()-curLife*3-1 , (10*curLife),(10*curLife));	
@@ -101,7 +86,7 @@ public class Red extends Entity {
 		g.fillRoundRect(this.getX()-Camera.x-curLife*3-1  , this.getY()-Camera.y-curLife*3-1, (10*curLife),(10*curLife),10 ,10);	
 			}
 		}
-		if(Game.CUR_LEVEL==6 && Game.hideSprite==false) {
+		if(Game.curLevel==6 && Game.hideSprite==false) {
 		g.drawImage(sprites[aIndex], this.getX()-Camera.x, this.getY()-Camera.y, null);
 		if(Game.gameState!="SCENE3")
 		Animate();
