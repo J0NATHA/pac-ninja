@@ -103,25 +103,26 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		entities.add(player);	
 	}
 	
-	public void initFrame() {
-	frame = new JFrame("Pac-Ninja");
-	frame.add(this);
-	frame.setResizable(false);
-	frame.pack();
-	Image imagem = null;
-	
-	try {
-		imagem = ImageIO.read(getClass().getResource("/icon.png"));	
-	}
-	catch(IOException e ) {
-		e.printStackTrace();
-	}
-	
-	frame.setIconImage(imagem);
-	frame.setAlwaysOnTop(true);
-	frame.setLocationRelativeTo(null);
-	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	frame.setVisible(true);
+	public void initFrame() 
+	{
+		frame = new JFrame("Pac-Ninja");
+		frame.add(this);
+		frame.setResizable(false);
+		frame.pack();
+		Image imagem = null;
+		
+		try {
+			imagem = ImageIO.read(getClass().getResource("/icon.png"));	
+		}
+		catch(IOException e) {
+			e.printStackTrace();
+		}
+		
+		frame.setIconImage(imagem);
+		frame.setAlwaysOnTop(true);
+		frame.setLocationRelativeTo(null);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setVisible(true);
 	}
 	
 	public synchronized void start() {
@@ -146,8 +147,6 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		game.start();
 	}
 
-	
-	
 	public void tick() {
 		if(randomize) {
 			randomize();
@@ -629,9 +628,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			else
 				tut=0;
 		}
-		
-		
-		
+	
 		if(Game.player.life==1) {
 			redFrames++;
 			if(redFrames<=15)
@@ -641,10 +638,9 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			
 		}
 		if(gameState=="NORMAL" && curLevel!=6)
-		ui.renderOrb(g);
+			ui.renderOrb(g);
 		
 		if(gameState=="GAME_OVER"){
-			
 			fadeOut=true;
 		}
 		
@@ -884,8 +880,10 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			player.right=false;
 			player.down=false;
 			
-		}else if(e.getKeyCode()==KeyEvent.VK_DOWN  || 
-			e.getKeyCode()==KeyEvent.VK_S) {
+		}
+		else if(e.getKeyCode()==KeyEvent.VK_DOWN || 
+				 e.getKeyCode()==KeyEvent.VK_S) 
+		{
 			if(gameState=="TUT" && tutDown==false && tutCdown==false) {
 				Sound.keys.play();
 				tutCdown=true;
@@ -1008,8 +1006,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 
 	@Override
 	public void mouseMoved(MouseEvent e) {
-		this.mx=e.getX();
-		this.my=e.getY();
+
 	}
 
 }
