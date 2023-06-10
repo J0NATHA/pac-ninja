@@ -45,7 +45,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 	public boolean saveGame, spawnBlue, npcSpawn, showMessageGameOver, fadeOut, fadeIn;
 	public int mx,my;
 	public static int curLevel = 1;
-	private int maxLevel = 6;
+	private static int maxLevel = 6;
 	public static int redFrames=0, bossTimer=0, bossTimerFrames=0, sceneFrames=0;
 	private int framesGameOver=0, bossFrames=0, randFrames=0;
 	private int blackoutFrames=0;
@@ -293,12 +293,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			}
 		}
 	}
-	
-	
-	
-	
-	
-	
+
 	public void render() {	
 		BufferStrategy bs=this.getBufferStrategy();
 		if(bs==null) {
