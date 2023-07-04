@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 
+import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.LineUnavailableException;
@@ -24,9 +25,18 @@ public class Sound {
 			clips = new Clip[count];
 			this.count= count;
 			
-			for(int i =0; i<count; i++) {
-				clips[i] = AudioSystem.getClip();
-				clips[i].open(AudioSystem.getAudioInputStream(new ByteArrayInputStream(buffer)));
+			try
+			{
+				for(int i =0; i<count; i++) 
+				{
+					clips[i] = AudioSystem.getClip();
+					clips[i].open(AudioSystem.getAudioInputStream(new ByteArrayInputStream(buffer)));
+				}
+			}
+			catch (Exception e)
+			{
+				System.err.println(e.getMessage());
+				e.printStackTrace();
 			}
 		}
 		
