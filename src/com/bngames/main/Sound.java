@@ -5,20 +5,22 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 
-import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
-public class Sound {
+public class Sound 
+{
 
-	public static class Clips{
+	public static class Clips
+	{
 		public Clip[] clips;
 		private int p;
 		private int count;
 		
-		public Clips(byte[] buffer, int count) throws LineUnavailableException, IOException, UnsupportedAudioFileException{
+		public Clips(byte[] buffer, int count) throws LineUnavailableException, IOException, UnsupportedAudioFileException
+		{
 			if(buffer == null)
 				return;
 			
@@ -40,8 +42,10 @@ public class Sound {
 			}
 		}
 		
-		public void play() {
+		public synchronized void play() 
+		{
 			if (clips==null) return;
+			
 			clips[p].stop();
 			clips[p].setFramePosition(0);
 			clips[p].start();
@@ -49,12 +53,14 @@ public class Sound {
 			if(p>=count) p=0;
 		}
 		
-		public void loop() {
+		public void loop() 
+		{
 			if(clips==null) return;
 			clips[p].loop(300);
 		}
 		
-		public void terminate() {
+		public void terminate() 
+		{
 			clips[p].stop();
 		}
 	}
