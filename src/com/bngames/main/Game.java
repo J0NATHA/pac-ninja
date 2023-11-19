@@ -44,8 +44,8 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 	public static boolean randomize, hideSprite, spawnEnemies, restartGame;
 	public boolean saveGame, spawnBlue, npcSpawn, showMessageGameOver, fadeOut, fadeIn;
 	public int mx, my;
-	public static int curLevel = 1;
-	private int maxLevel = 6;
+	public static int curLevel = 5;
+	private final int MAX_LEVEL = 10;
 	public static int redFrames=0, bossTimer=0, bossTimerFrames=0, sceneFrames=0;
 	private int framesGameOver, bossFrames, randFrames, blackoutFrames,
 		space, blackinFrames, nextlvlFrames, pauseFrames, musicFrames, tut;
@@ -95,7 +95,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 
 		entities = new ArrayList<Entity>();
 		enemies = new ArrayList<Enemy>();
-		world = new World("/level1.png");
+		world = new World(curLevel);
 		ui = new UI();
 		spacebar = new BufferedImage[2];
 		spacebar[0] = spritesheet.getSprite(101, 116, 40, 11);
@@ -163,12 +163,12 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			randomize();
 		}
 		
-		if(gameState=="NORMAL" && curLevel==6 && Red.curLife==0) 
+		if(gameState=="NORMAL" && curLevel == MAX_LEVEL && Red.curLife==0) 
 		{
 			gameState="TRANSITION2";
 		}
 			
-		if(curLevel != 6) 
+		if(curLevel != MAX_LEVEL) 
 		{
 			Sound.bgm.loop();
 		}
@@ -208,7 +208,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 				Entity e=entities.get(i);
 				e.tick();
 			 }
-			 if(Game.orbAtual == Game.orbContagem && curLevel!=6) 
+			 if(Game.orbAtual == Game.orbContagem && curLevel!=MAX_LEVEL) 
 			 {
 				if (Game.orbsPicked == 20)
 				{
@@ -229,11 +229,11 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 				blackoutFrames=0;
 				nextlvlFrames=0;
 				curLevel++;
-				if(curLevel>maxLevel) {
+				if(curLevel > MAX_LEVEL) 
+				{
 					curLevel=1;
 				}
-				String newWorld = "level"+curLevel+".png";
-				World.restartGame(newWorld);
+				World.restartGame(curLevel);
 		
 				gameState="SCENE1";
 			}	
@@ -247,10 +247,9 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			Game.enemies.removeAll(enemies);
 			Game.gameState="NORMAL";
 			this.blackoutFrames=0;
-			String newWorld="level"+curLevel+".png";
-			World.restartGame(newWorld);
+			World.restartGame(curLevel);
 			Game.enemies= new ArrayList<Enemy>();
-			if(curLevel==6) 
+			if(curLevel == MAX_LEVEL) 
 			{
 				 Red.curLife=0;
 				 Game.gameState="SCENE2";
@@ -282,8 +281,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			}
 			if(randFrames>30 && randFrames<60) {
 				color=true;
-				String newWorld="level"+curLevel+".png";
-				World.restartGame(newWorld);
+				World.restartGame(curLevel);
 				bossTimer=0;
 			}
 			else if(randFrames>60){
@@ -332,7 +330,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		
 		world.render(g);
 		Collections.sort(entities, Entity.nodeSorter);
-		if(Game.curLevel==6) {
+		if(Game.curLevel == MAX_LEVEL) {
 			if(gameState!="SCENE3")
 				g.drawImage(Game.spritesheet.getSprite(43, 136, 20, 20), 158-Camera.x, 0-Camera.y, null);
 			if(gameState=="SCENE3" ) {
@@ -369,8 +367,10 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			g.drawString("Pac-Ninja", (Game.WIDTH)/2-26, (Game.HEIGHT)/2-28);
 		}
 		
-		if(curLevel==6) {
-			if(gameState=="NORMAL") {
+		if(curLevel == MAX_LEVEL) 
+		{
+			if(gameState=="NORMAL") 
+			{
 				spawnEnemies=true;
 				g.setColor(Color.white);
 				countdown();
@@ -389,7 +389,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			}
 		}
 		if(gameState=="SCENE1") {
-			if(curLevel!=6)
+			if(curLevel!=MAX_LEVEL)
 			{ player.updateCamera(); }
 			
 			if(curLevel==1) 
@@ -469,7 +469,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 					rectY=10;
 				}
 				}
-			else if(curLevel==6) {
+			else if(curLevel == MAX_LEVEL) {
 				Camera.y=0;
 				Camera.x=47;
 				g.setColor(new Color(0,250,0,200));
@@ -678,7 +678,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			redFrames=0;
 			
 		}
-		if(gameState=="NORMAL" && curLevel!=6)
+		if(gameState=="NORMAL" && curLevel!=MAX_LEVEL)
 			ui.renderOrb(g);
 		
 		if(gameState=="GAME_OVER")
@@ -798,10 +798,11 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 				pauseFrames=0;
 		}
 		
-		if(curLevel==6 && gameState=="NORMAL") {
+		if(curLevel == MAX_LEVEL && gameState=="NORMAL") 
+		{
 			g.setColor(Color.black);
-		g.setFont(new Font("consolas", Font.BOLD, 26 ));
-		g.drawString("RedNinja", 295, 52);
+			g.setFont(new Font("consolas", Font.BOLD, 26 ));
+			g.drawString("RedNinja", 295, 52);
 		}
 		
 		if(gameState=="END") {
@@ -847,8 +848,6 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		double amountofTicks = 60.0;
 		double ns= 1000000000 / amountofTicks;
 		double delta = 0;
-		
-	
 
 		double timer = System.currentTimeMillis();
 		requestFocus();
@@ -856,7 +855,9 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			long now = System.nanoTime();
 			delta+= (now - lastTime) / ns;
 			lastTime=now;
-			if (delta >= 1) {
+
+			if (delta >= 1) 
+			{
 				tick();
 				render();
 				frames++;

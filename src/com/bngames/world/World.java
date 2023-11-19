@@ -26,10 +26,23 @@ public class World {
 	public static final int TILE_SIZE=16;
 
 	
-		public World(String path) {
+		public World(int level) {
 		
-			try {
-				BufferedImage map = ImageIO.read(getClass().getResource(path));
+			try 
+			{
+				BufferedImage map = null;
+				level -= 1;
+				while(map == null)
+				{
+					level++;
+
+					try { map = ImageIO.read(getClass().getResource("/level" + level + ".png")); }
+					catch (IOException e)
+					{
+						e.printStackTrace();
+					}
+				}
+			
 				int[]pixels=new int[map.getWidth()*map.getHeight()];
 				WIDTH=map.getWidth();
 				HEIGHT=map.getHeight(); 
@@ -41,11 +54,14 @@ public class World {
 					
 						int pixelAtual = pixels[xx+(yy*map.getWidth())];
 						if(Game.curLevel<5)
-						tiles[xx+(yy*WIDTH)]=new FloorTile(xx*16,yy*16,Tile.Tile_FLOOR);
+						{ tiles[xx+(yy*WIDTH)]=new FloorTile(xx*16,yy*16,Tile.Tile_FLOOR); }
+
 						else if(Game.curLevel>=5)
-							tiles[xx+(yy*WIDTH)]=new FloorTile(xx*16,yy*16,Tile.Tile_CAVE[0]);
-						if(pixelAtual==0xFF000000) {
-							//Ch�o
+						{ tiles[xx+(yy*WIDTH)]=new FloorTile(xx*16,yy*16,Tile.Tile_CAVE[0]); }
+
+						if(pixelAtual==0xFF000000) 
+						{
+							//Chao
 							if(Game.curLevel<5)
 							tiles[xx+(yy*WIDTH)]=new FloorTile(xx*16,yy*16,Tile.Tile_FLOOR);
 							else if(Game.curLevel>=5) {
@@ -161,7 +177,8 @@ public class World {
 					}
 				}
 			} 
-			catch (IOException e) {
+			catch (Exception e) 
+			{
 				e.printStackTrace();
 			}
 			
@@ -197,7 +214,8 @@ public class World {
 				          (tiles[x4+(y4*World.WIDTH)] instanceof WallTile));
 			}
 		
-		public static void restartGame(String level) {
+		public static void restartGame(int level) 
+		{
 			Game.orbAtual=0;
 			Game.orbContagem=0;
 			Game.orbsPicked=0;
@@ -207,8 +225,7 @@ public class World {
 			Game.spritesheet=new Spritesheet("/spritesheet.png");
 			Game.player = new Player(0,0,16,16,1, Game.spritesheet.getSprite(32, 0, 16, 16));
 			Game.entities.add(Game.player);
-			Game.world=new World("/"+level);
-			
+			Game.world=new World(level);
 		}
 		
 		
