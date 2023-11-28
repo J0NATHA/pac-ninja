@@ -80,16 +80,14 @@ public class Player extends Entity
 		updateCamera();
 
 		if (hasSuperHealth())
-		{
-			superHealth();
-		}
+		{ superHealth(); }
+
 		if (!isDamaged)
 		{
 			if (sneak)
-			{
-				speed = 0.2;
-			} else
-				speed = 1;
+			{ speed = 0.2; } 
+			else
+			{ speed = 1; }
 		}
 
 		if (!growIt)
@@ -102,7 +100,9 @@ public class Player extends Entity
 					x += speed;
 					changedDir = true;
 				}
-			} else if (left)
+			}
+
+			else if (left)
 			{
 				lastDir = -1;
 				if (World.isFree((int) (x - speed), this.getY()))
@@ -111,6 +111,7 @@ public class Player extends Entity
 					changedDir = true;
 				}
 			}
+
 			if (up)
 			{
 				lastDir = 2;
@@ -119,7 +120,9 @@ public class Player extends Entity
 					y -= speed;
 					changedDir = true;
 				}
-			} else if (down)
+			}
+
+			else if (down)
 			{
 				lastDir = -2;
 				if (World.isFree(this.getX(), (int) (y + speed)))
@@ -137,17 +140,18 @@ public class Player extends Entity
 				superHealth = false;
 				life = 2;
 			}
+
 			invFrames++;
+
 			if (invFrames < 30)
-			{
-				speed = 3;
-			} else
+			{ speed = 3; }
+
+			else
 			{
 				speed = 1;
 				isDamaged = false;
 				invFrames = 0;
 			}
-
 		}
 
 		getOrb();
@@ -156,9 +160,7 @@ public class Player extends Entity
 		{
 			life = 0;
 			Game.gameState = "GAME_OVER";
-
 		}
-
 	}
 
 	public void superHealth()
@@ -181,7 +183,7 @@ public class Player extends Entity
 					if (Game.orbsPicked < 20)
 					{
 						Game.orbsPicked++;
-						if (Game.curLevel == 6)
+						if (Game.curLevel == Game.MAX_LEVEL)
 						{
 							if (new Random().nextInt(100) < 35)
 							{
@@ -201,15 +203,15 @@ public class Player extends Entity
 	public void animate()
 	{
 		if (Game.gameState == "NORMAL" || Game.gameState == "SCENE3")
-			frames++;
+		{ frames++; }
+		
 		if (frames == maxFrames)
 		{
 			frames = 0;
 			index++;
+			
 			if (index == maxIndex)
-			{
-				index = 0;
-			}
+			{ index = 0; }
 		}
 	}
 
@@ -228,11 +230,11 @@ public class Player extends Entity
 		if (orbFrames == 5)
 		{
 			orbFrames = 0;
+			
 			if (orbIndex < 2)
-			{
-				orbIndex++;
-			} else
-				World.generateParticle(5, (int) x + 10, (int) y + 10);
+			{ orbIndex++; }
+			else
+			{ World.generateParticle(5, (int) x + 10, (int) y + 10); }
 		}
 	}
 
@@ -252,7 +254,8 @@ public class Player extends Entity
 				if (growIt == false)
 				{
 					if (lastDir == 0)
-						g.drawImage(downDir[0], this.getX() - Camera.x, this.getY() - Camera.y, null);
+					{ g.drawImage(downDir[0], this.getX() - Camera.x, this.getY() - Camera.y, null); }
+					
 					if (lastDir == 1)
 					{
 						if (World.isFree((int) (x + speed), getY()))
@@ -260,15 +263,16 @@ public class Player extends Entity
 							hitOnce = true;
 							animate();
 							g.drawImage(rightDir[index], this.getX() - Camera.x, this.getY() - Camera.y, null);
-
-						} else
+						} 
+						
+						else
 						{
 							g.drawImage(this.wallHold[0], this.getX() - Camera.x, this.getY() - Camera.y, null);
 							hitWall();
-
 						}
-
-					} else if (lastDir == -1)
+					} 
+					
+					else if (lastDir == -1)
 					{
 						if (World.isFree((int) (x - speed), getY()))
 						{
@@ -276,13 +280,16 @@ public class Player extends Entity
 							animate();
 							g.drawImage(leftDir[index], this.getX() - Camera.x, this.getY() - Camera.y, null);
 
-						} else
+						}
+						
+						else
 						{
 							g.drawImage(this.wallHold[1], this.getX() - Camera.x, this.getY() - Camera.y, null);
 							hitWall();
 						}
-
-					} else if (lastDir == 2)
+					} 
+					
+					else if (lastDir == 2)
 					{
 						if (World.isFree(getX(), (int) (y - speed)))
 						{
@@ -290,13 +297,16 @@ public class Player extends Entity
 							animate();
 							g.drawImage(upDir[index], this.getX() - Camera.x, this.getY() - Camera.y, null);
 
-						} else
+						} 
+						
+						else
 						{
 							g.drawImage(this.wallHold[3], this.getX() - Camera.x, this.getY() - Camera.y, null);
 							hitWall();
 						}
-
-					} else if (lastDir == -2)
+					} 
+					
+					else if (lastDir == -2)
 					{
 						if (World.isFree(getX(), (int) (y + speed)))
 						{
@@ -304,58 +314,76 @@ public class Player extends Entity
 							animate();
 							g.drawImage(downDir[index], this.getX() - Camera.x, this.getY() - Camera.y, null);
 							animate();
-
-						} else
+						} 
+						
+						else
 						{
 							g.drawImage(this.wallHold[2], this.getX() - Camera.x, this.getY() - Camera.y, null);
 							hitWall();
 						}
-
 					}
-				} else
+				} 
+				
+				// growIt == true
+				else
 				{
 					g.drawImage(orbX[orbIndex], this.getX() - Camera.x, this.getY() - Camera.y, null);
 					animateOrb();
-
 				}
 
 				if (hasSuperHealth())
-					drawSuperHealth(g);
+				{ drawSuperHealth(g); }
 
 				if (growIt)
 				{
+					
 					rectTime++;
+					
 					if (rectTime > 15)
 					{
 						if (rectTime <= rectMax)
 						{
 							Graphics2D g2 = (Graphics2D) g;
 							blackoutFrames++;
+							
 							if (blackoutFrames > 0 && blackoutFrames < 5)
 							{
 								Sound.growIt.play();
 								g2.setColor(new Color(0, 250, 0, 50));
 								g2.fillRect(0, 0, Game.WIDTH, Game.HEIGHT);
-							} else if (blackoutFrames >= 5 && blackoutFrames < 10)
+							} 
+							
+							else if (blackoutFrames >= 5 && blackoutFrames < 10)
 							{
 								g2.setColor(new Color(0, 250, 0, 100));
 								g2.fillRect(0, 0, Game.WIDTH, Game.HEIGHT);
-							} else if (blackoutFrames >= 10 && blackoutFrames < 15)
+							} 
+							
+							else if (blackoutFrames >= 10 && blackoutFrames < 15)
 							{
 								g2.setColor(new Color(0, 250, 0, 200));
 								g2.fillRect(0, 0, Game.WIDTH, Game.HEIGHT);
-							} else if (blackoutFrames >= 15)
+							} 
+							
+							else if (blackoutFrames >= 15)
 							{
 								g2.setColor(new Color(0, 250, 0));
 								g2.fillRect(0, 0, Game.WIDTH, Game.HEIGHT);
 							}
-						} else
+						} 
+						
+						else
 						{
 							if (Game.curLevel == Game.MAX_LEVEL)
 							{
 								if (Red.curLife > 1)
 								{
 									Game.randomize = true;
+								}
+
+								if (Red.curLife == 2)
+								{
+									superHealth();
 								}
 
 								if (Red.curLife > 0)
@@ -368,10 +396,12 @@ public class Player extends Entity
 
 							blackoutFrames = 0;
 							growIt = false;
+							
 							if (life == 1)
-								life++;
+							{ life++; }
 							orbIndex = 0;
 							rectTime = 0;
+							Game.orbsPicked = 0;
 						}
 					}
 				}
@@ -386,11 +416,10 @@ public class Player extends Entity
 					}
 				}
 
-				if (life == 1 && Game.curLevel != 6)
+				if (life == 1 && Game.curLevel != Game.MAX_LEVEL)
 				{
 					g.setColor(new Color(255, 0, 0, 50));
 					g.fillRect(0, 0, Game.WIDTH, Game.HEIGHT);
-
 				}
 
 			}
