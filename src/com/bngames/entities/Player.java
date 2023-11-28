@@ -89,7 +89,7 @@ public class Player extends Entity
 			else
 			{ speed = 1; }
 		}
-
+		
 		if (!growIt)
 		{
 			if (right)
@@ -196,6 +196,12 @@ public class Player extends Entity
 					}
 					return;
 				}
+			}
+			
+			if(current instanceof SuperHealth && Entity.isColliding(this, current))
+			{
+				superHealth = true;
+				Game.entities.remove(i);
 			}
 		}
 	}
@@ -381,9 +387,9 @@ public class Player extends Entity
 									Game.randomize = true;
 								}
 
-								if (Red.curLife == 2)
+								if (Red.curLife == 1)
 								{
-									superHealth();
+									superHealth = true;
 								}
 
 								if (Red.curLife > 0)

@@ -15,6 +15,7 @@ import com.bngames.entities.Particle;
 import com.bngames.entities.Particle2;
 import com.bngames.entities.Player;
 import com.bngames.entities.Red;
+import com.bngames.entities.SuperHealth;
 import com.bngames.entities.Tree;
 import com.bngames.graficos.Spritesheet;
 import com.bngames.main.Game;
@@ -31,7 +32,12 @@ public class World
 
 		try
 		{
+			
 			BufferedImage map = null;
+			
+			if(level > Game.MAX_LEVEL)
+			{ level = 1; }
+			
 			level -= 1;
 			while (map == null)
 			{
@@ -62,6 +68,7 @@ public class World
 				{
 
 					int pixelAtual = pixels[xx + (yy * map.getWidth())];
+					
 					if (Game.curLevel < 9)
 					{
 						tiles[xx + (yy * WIDTH)] = new FloorTile(xx * 16, yy * 16, Tile.Tile_FLOOR);
@@ -76,7 +83,8 @@ public class World
 					{
 						// Chao
 						if (Game.curLevel < 9)
-							tiles[xx + (yy * WIDTH)] = new FloorTile(xx * 16, yy * 16, Tile.Tile_FLOOR);
+						{ tiles[xx + (yy * WIDTH)] = new FloorTile(xx * 16, yy * 16, Tile.Tile_FLOOR); }
+						
 						else if (Game.curLevel >= 9)
 						{
 							if (new Random().nextInt(100) < 50)
@@ -84,33 +92,44 @@ public class World
 							else
 								tiles[xx + (yy * WIDTH)] = new FloorTile(xx * 16, yy * 16, Tile.Tile_CAVE[1]);
 						}
-					} else if (pixelAtual == 0xFFFFFFFF)
+					} 
+					else if (pixelAtual == 0xFFFFFFFF)
 					{
 // 						Parede
 						if (Game.curLevel < 9)
 						{
 							tiles[xx + (yy * WIDTH)] = new WallTile(xx * 16, yy * 16, Tile.Tile_WALL);
-						} else if (Game.curLevel >= 9)
+						} 
+						else if (Game.curLevel >= 9)
 						{
 							if (new Random().nextInt(100) < 50)
 								tiles[xx + (yy * WIDTH)] = new WallTile(xx * 16, yy * 16, Tile.Tile_WALL2[0]);
 							else
 								tiles[xx + (yy * WIDTH)] = new WallTile(xx * 16, yy * 16, Tile.Tile_WALL2[1]);
 						}
-					} else if (pixelAtual == 0xFF4800FF)
+					}
+					else if (pixelAtual == 0xFF4800FF)
 					{
 //							Player
 						Game.player.setX(xx * 16);
 						Game.player.setY(yy * 16);
-					} else if (pixelAtual == 0xFFFF0000)
+					}
+					else if (pixelAtual == 0xFFFFD800)
+					{
+						SuperHealth superHealth = new SuperHealth(
+								(xx * 16) + 2, (yy * 16) + 2, 10, 10, Entity.SUPER_HEALTH);
+						Game.entities.add(superHealth);
+					}
+					else if (pixelAtual == 0xFFFF0000)
 					{
 //							Inimigo de fogo
 						Enemy2 enemy = new Enemy2(xx * 16, yy * 16, 16, 16, 1, Entity.ENEMY_EN);
 						Game.entities.add(enemy);
 
-					} else if (pixelAtual == 0xFF15FF00)
+					} 
+					else if (pixelAtual == 0xFF15FF00)
 					{
-//						tree
+//						orb
 						if (Game.curLevel != Game.MAX_LEVEL)
 						{
 							Tree tree = new Tree((xx * 16) + 3, (yy * 16) + 3, 8, 8, 0, Entity.TREE_SPRITE);

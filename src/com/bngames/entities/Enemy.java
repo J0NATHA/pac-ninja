@@ -134,7 +134,7 @@ public class Enemy extends Entity
 		Rectangle enemyCurrent = new Rectangle(this.getX() + 2, this.getY(), 12, 17);
 		Rectangle player = new Rectangle(Game.player.getX() - Game.player.Pmaskx,
 				Game.player.getY() - Game.player.Pmasky, Game.player.Pmaskw, Game.player.Pmaskh);
-
+		
 		return enemyCurrent.intersects(player);
 	}
 

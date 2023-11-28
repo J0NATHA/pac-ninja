@@ -136,7 +136,12 @@ public class UI
 	{
 		try
 		{
-			final BufferedImage logo = ImageIO.read(getClass().getResource("/LogoBN.png"));
+			String path = "/LogoBN.png";
+			
+			if(Game.curLevel == Game.MAX_LEVEL)
+			{ path = "/LogoRN.png"; }
+			
+			final BufferedImage logo = ImageIO.read(getClass().getResource(path));
 			
 			final int logoSize = 480;
 			

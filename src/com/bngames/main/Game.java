@@ -45,7 +45,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 	public static boolean randomize, hideSprite, spawnEnemies, restartGame;
 	public boolean saveGame, spawnBlue, npcSpawn, showMessageGameOver, fadeOut, fadeIn, fadeMenu;
 	public int mx, my;
-	public static int curLevel = 1;
+	public static int curLevel;
 	public static final int MAX_LEVEL = 10;
 	public static int redFrames = 0, bossTimer = 0, bossTimerFrames = 0, sceneFrames = 0;
 	private int framesGameOver, bossFrames, randFrames, blackoutFrames, space, blackinFrames, nextlvlFrames,
@@ -90,6 +90,8 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			e1.printStackTrace();
 		}
 
+		curLevel = SaveGame.latestCompletedLevel() + 1;
+		
 		spritesheet = new Spritesheet("/spritesheet.png");
 		player = new Player(0, 0, 16, 16, 1, spritesheet.getSprite(32, 0, 16, 16));
 
@@ -105,7 +107,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 						new Random().nextInt(256),
 						new Random().nextInt(256),
 						new Random().nextInt(256) );
-
+		
 		entities.add(player);
 	}
 
@@ -167,19 +169,23 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 
 		if (gameState == "NORMAL" && curLevel == MAX_LEVEL && Red.curLife == 0)
 		{
+			SaveGame.save(String.valueOf(curLevel));
 			gameState = "TRANSITION2";
 		}
 
-		if (curLevel != MAX_LEVEL)
+		if (curLevel != MAX_LEVEL && !gameState.equals("SPLASH_SCREEN"))
 		{
 			Sound.bgm.loop();
-		} else
+		} 
+		
+		if(curLevel == MAX_LEVEL && gameState != "END")
 		{
 			musicFrames++;
 			if (musicFrames < 2399)
 			{
 				Sound.boss_opening.loop();
-			} else
+			} 
+			else
 			{
 				Sound.boss_opening.terminate();
 				Sound.boss_loop.loop();
@@ -233,11 +239,14 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			{
 				blackoutFrames = 0;
 				nextlvlFrames = 0;
+				
+				SaveGame.save(String.valueOf(curLevel));
+				
 				curLevel++;
+				
 				if (curLevel > MAX_LEVEL)
-				{
-					curLevel = 1;
-				}
+				{ curLevel = 1; }
+				
 				World.restartGame(curLevel);
 
 				gameState = "SCENE1";
@@ -253,6 +262,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			this.blackoutFrames = 0;
 			World.restartGame(curLevel);
 			Game.enemies = new ArrayList<Enemy>();
+			
 			if (curLevel == MAX_LEVEL)
 			{
 				Red.curLife = 0;
@@ -350,7 +360,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		if (Game.curLevel == MAX_LEVEL)
 		{
 			if (gameState != "SCENE3")
-				g.drawImage(Game.spritesheet.getSprite(43, 136, 20, 20), 158 - Camera.x, 0 - Camera.y, null);
+			{ g.drawImage(Game.spritesheet.getSprite(43, 136, 20, 20), 158 - Camera.x, 0 - Camera.y, null); }
 			if (gameState == "SCENE3")
 			{
 				if (sceneFrames < 240)
@@ -366,6 +376,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		for (int i = 0; i < entities.size(); i++)
 		{
 			Entity e = entities.get(i);
+			
 			e.render(g);
 		}
 
@@ -446,7 +457,8 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 					Game.gameState = "NORMAL";
 					rectY = 10;
 				}
-			} else if (curLevel == 2)
+			}
+			else if (curLevel == 2)
 			{
 				g.setColor(new Color(0, 250, 0, 200));
 				if (rectY == 10)
@@ -482,7 +494,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 					Game.gameState = "NORMAL";
 					rectY = 10;
 				}
-			} else if (curLevel == 4)
+			} else if (curLevel == 8)
 			{
 
 				g.setColor(new Color(0, 250, 0, 200));
@@ -499,7 +511,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 					rectY = 10;
 				}
 			}
-			if (curLevel == 5)
+			if (curLevel == 9)
 			{
 				g.setColor(new Color(0, 250, 0, 200));
 				if (rectY == 10)
@@ -514,13 +526,17 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 					Game.gameState = "NORMAL";
 					rectY = 10;
 				}
-			} else if (curLevel == MAX_LEVEL)
+			} 
+			
+			else if (curLevel == MAX_LEVEL)
 			{
 				Camera.y = 0;
 				Camera.x = 47;
 				g.setColor(new Color(0, 250, 0, 200));
+				
 				if (rectY == 10)
-					Sound.start.play();
+				{ Sound.start.play(); }
+				
 				if (rectY != 215)
 				{
 					g.fillOval(rectX + 4, rectY, 16, 23);
@@ -532,13 +548,19 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 					rectY = 10;
 				}
 			}
+			
+			else
+			{ Game.gameState = "NORMAL"; }
 		}
 
 		if (gameState == "SCENE2")
 		{
 
-			Camera.y = 0;
-			Camera.x = 47;
+			if(bossFrames == 0)
+			{
+				Camera.y = 0;
+				Camera.x = 47;
+			}
 			bossFrames++;
 
 			ui.renderBoss(g);
@@ -579,10 +601,12 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			}
 			if (bossFrames > 50)
 			{
-				Camera.y++;
-
+				Camera.x = 40;
+				System.out.println(Camera.y);
+				Camera.y += 1; 
 			}
-			if (bossFrames == 120)
+			
+			if (bossFrames == 135)
 			{
 				randomize = true;
 				if (Red.curLife == Red.redLife)
@@ -679,85 +703,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 
 		}
 
-		if (gameState == "TUT")
-		{
-			g.setColor(new Color(0, 0, 0, 245));
-			g.fillRect(0, 0, WIDTH * SCALE, HEIGHT * SCALE);
-			g.setColor(Color.gray);
-			g.drawRect(109, 89, 12, 12);
-			g.drawRect(109, 104, 12, 12);
-			g.drawRect(124, 104, 12, 12);
-			g.drawRect(94, 104, 12, 12);
-			g.drawRect(94, 119, 42, 12);
-			g.drawRect(54, 119, 21, 12);
-
-			g.setColor(Color.white);
-			g.drawRect(110, 90, 10, 10);
-			g.drawRect(110, 105, 10, 10);
-			g.drawRect(125, 105, 10, 10);
-			g.drawRect(95, 105, 10, 10);
-			g.drawRect(95, 120, 40, 10);
-			g.drawRect(55, 120, 19, 10);
-
-			if (tutUp)
-			{
-				g.setColor(keysColor);
-				g.fillRect(111, 91, 9, 9);
-			}
-			if (tutDown)
-			{
-				g.setColor(keysColor);
-				g.fillRect(111, 106, 9, 9);
-			}
-			if (tutLeft)
-			{
-				g.setColor(keysColor);
-				g.fillRect(96, 106, 9, 9);
-			}
-			if (tutRight)
-			{
-				g.setColor(keysColor);
-				g.fillRect(126, 106, 9, 9);
-			}
-			if (tutBar)
-			{
-				g.setColor(keysColor);
-				g.fillRect(96, 121, 39, 9);
-			}
-
-			if (tutShift)
-			{
-				g.setColor(keysColor);
-				g.fillRect(56, 121, 18, 9);
-			}
-
-			if (tutCdown == true)
-			{
-				tut++;
-				
-				if(tut % 4 == 0)
-				{
-					keysColor = new Color(
-							new Random().nextInt(256),
-							new Random().nextInt(256),
-							new Random().nextInt(256) );
-				}
-				
-				
-				if (tut >= 20)
-				{
-					tutCdown = false;
-					Sound.keys.terminate();
-				
-					if (tutUp && tutDown && tutLeft && tutRight && tutBar && tutShift)
-					{
-						gameState = "MENU";
-					}
-				}
-			} 
-			else
-			{ tut = 0; }
-		}
+		
 
 		if (Game.player.life == 1)
 		{
@@ -840,12 +786,97 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		g.drawImage(image, 0, 0, WIDTH * SCALE, HEIGHT * SCALE, null);
 		// SCALE IS DONE HERE
 
+		if (gameState == "TUT")
+		{
+			g.setColor(new Color(0, 0, 0, 245));
+			g.fillRect(0, 0, WIDTH * SCALE, HEIGHT * SCALE);
+			g.setColor(Color.gray);
+			g.drawRect(109 * SCALE, 89 * SCALE, 12 * SCALE, 12 * SCALE);
+			g.drawRect(109 * SCALE, 104 * SCALE, 12 * SCALE, 12 * SCALE);
+			g.drawRect(124 * SCALE, 104 * SCALE, 12 * SCALE, 12 * SCALE);
+			g.drawRect(94 * SCALE, 104 * SCALE, 12 * SCALE, 12 * SCALE);
+			g.drawRect(94 * SCALE, 119 * SCALE, 42 * SCALE, 12 * SCALE);
+			g.drawRect(54 * SCALE, 119 * SCALE, 21 * SCALE, 12 * SCALE);
+
+			g.setColor(Color.white);
+			g.drawRect(110 * SCALE, 90 * SCALE, 10 * SCALE, 10 * SCALE);
+			g.drawRect(110 * SCALE, 105 * SCALE, 10 * SCALE, 10 * SCALE);
+			g.drawRect(125 * SCALE, 105 * SCALE, 10 * SCALE, 10 * SCALE);
+			g.drawRect(95 * SCALE, 105 * SCALE, 10 * SCALE, 10 * SCALE);
+			g.drawRect(95 * SCALE, 120 * SCALE, 40 * SCALE, 10 * SCALE);
+			g.drawRect(55 * SCALE, 120 * SCALE, 19 * SCALE, 10 * SCALE);
+
+			if (tutUp)
+			{
+				g.setColor(keysColor);
+				g.fillRect(110 * SCALE, 90 * SCALE, 10 * SCALE, 10 * SCALE);
+			}
+			if (tutDown)
+			{
+				g.setColor(keysColor);
+				g.fillRect(110 * SCALE, 105 * SCALE, 10 * SCALE, 10 * SCALE);
+			}
+			if (tutLeft)
+			{
+				g.setColor(keysColor);
+				g.fillRect(95 * SCALE, 105 * SCALE, 10 * SCALE, 10 * SCALE);
+			}
+			if (tutRight)
+			{
+				g.setColor(keysColor);
+				g.fillRect(125 * SCALE, 105 * SCALE, 10 * SCALE, 10 * SCALE);
+			}
+			if (tutBar)
+			{
+				g.setColor(keysColor);
+				g.fillRect(95 * SCALE, 120 * SCALE, 40 * SCALE, 10 * SCALE);
+			}
+
+			if (tutShift)
+			{
+				g.setColor(keysColor);
+				g.fillRect(55 * SCALE, 120 * SCALE, 19 * SCALE, 10 * SCALE);
+			}
+
+			if (tutCdown == true)
+			{
+				tut++;
+				
+				if(tut % 4 == 0)
+				{
+					keysColor = new Color(
+							new Random().nextInt(256),
+							new Random().nextInt(256),
+							new Random().nextInt(256) );
+				}
+				
+				
+				if (tut >= 20)
+				{
+					tutCdown = false;
+					Sound.keys.terminate();
+				
+					if (tutUp && tutDown && tutLeft && tutRight && tutBar && tutShift)
+					{
+						gameState = "MENU";
+					}
+				}
+			} 
+			else
+			{ tut = 0; }
+		}
+		
 		if (gameState.equals("SPLASH_SCREEN"))
 		{
 			boolean done = ui.drawSplashScreen(g);
 			
 			if(done)
-			{ gameState = "MENU"; }
+			{
+				gameState = "MENU";
+				
+				if(curLevel == 1)
+				{ gameState = "TUT";}
+			}
 		}
 		
 		if (gameState == "NORMAL")
@@ -899,7 +930,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 				++blackoutFrames;
 				
 				fadeMenu = ui.fadeFromBlack(g, blackoutFrames, 3);
-				System.out.println(blackoutFrames);
+				
 				if(fadeMenu)
 				{ blackoutFrames = 0; }
 			}
@@ -926,6 +957,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 
 		if (gameState == "END")
 		{
+			Sound.boss_loop.terminate();
 			sceneFrames++;
 
 			g.setColor(Color.black);
@@ -935,26 +967,27 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			{
 				g.setColor(Color.white);
 				g.setFont(new Font("consolas", Font.LAYOUT_LEFT_TO_RIGHT, 26));
-				g.drawString("To be continued...", WIDTH + 50, HEIGHT + 60);
+				g.drawString("To be continued...", WIDTH, HEIGHT + 100);
 			}
 			if (sceneFrames > 150 && sceneFrames < 270)
 			{
 				g.setColor(Color.white);
 				g.setFont(new Font("consolas", Font.LAYOUT_LEFT_TO_RIGHT, 26));
-				g.drawString("Created by Jonatha S.M.", WIDTH - 10, HEIGHT + 60);
+				g.drawString("Created by J0natha Menezes", WIDTH - 70, HEIGHT + 100);
 			}
 			if (sceneFrames > 270 && sceneFrames < 390)
 			{
 				g.setColor(Color.white);
 				g.setFont(new Font("consolas", Font.LAYOUT_LEFT_TO_RIGHT, 26));
-				g.drawString("Fire sprite by Chromaeleon", WIDTH - 20, HEIGHT + 60);
-				g.drawString("Cyberpunk moonlight sonata by Joth", WIDTH - 75, HEIGHT + 90);
+				g.drawString("Fire sprite by Chromaeleon (ColorOptimist)", 55, HEIGHT + 60);
+				g.drawString("Cyberpunk Moonlight Sonata", 180, HEIGHT + 100);
+				g.drawString("(RedNinja theme) by Joth", 180, HEIGHT + 130);
 			}
 			if (sceneFrames > 410)
 			{
 				g.setColor(Color.white);
 				g.setFont(new Font("consolas", Font.LAYOUT_LEFT_TO_RIGHT, 26));
-				g.drawString("Thank you for playing.", WIDTH - 20, HEIGHT + 60);
+				g.drawString("Thank you for playing.", WIDTH - 50, HEIGHT + 100);
 			}
 			if (sceneFrames > 500)
 			{

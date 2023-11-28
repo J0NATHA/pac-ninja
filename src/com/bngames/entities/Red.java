@@ -99,7 +99,7 @@ public class Red extends Entity
 						(10 * curLife), (10 * curLife), 10, 10);
 			}
 		}
-		if (Game.curLevel == 6 && Game.hideSprite == false)
+		if (Game.curLevel == Game.MAX_LEVEL && Game.hideSprite == false)
 		{
 			g.drawImage(sprites[aIndex], this.getX() - Camera.x, this.getY() - Camera.y, null);
 			if (Game.gameState != "SCENE3")
