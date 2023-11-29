@@ -39,7 +39,6 @@ public abstract class SaveGame
 			while((line = reader.readLine()) != null)
 			{
 				retVal = line.replace("\n", "");
-				System.out.println(retVal);
 			}
 			
 			reader.close();
@@ -48,11 +47,11 @@ public abstract class SaveGame
 		} 
 		
 		catch (FileNotFoundException e)
-		{ return 1; } 
+		{ return 0; } 
 		
 		catch (IOException e)
 		{ e.printStackTrace(); }
 		
-		return 1;
+		return 0;
 	}
 }

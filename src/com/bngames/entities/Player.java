@@ -159,6 +159,7 @@ public class Player extends Entity
 		if (life <= 0)
 		{
 			life = 0;
+			Game.fadeOut = true;
 			Game.gameState = "GAME_OVER";
 		}
 	}

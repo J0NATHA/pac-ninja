@@ -35,29 +35,30 @@ import com.bngames.world.World;
 public class Game extends Canvas implements Runnable, KeyListener, MouseListener, MouseMotionListener
 {
 	private static final long serialVersionUID = 1L;
+	
 	public final String GAME_VERSION = "v1.3.0";
 	public static JFrame frame;
-	private boolean isRunning = true, tutUp, tutDown, tutLeft, tutRight, tutBar, tutShift, tutCdown, color;
 
 	private Thread thread;
 	private Color keysColor;
-	public static final int WIDTH = 240, HEIGHT = 240, SCALE = 3;
-	public static boolean randomize, hideSprite, spawnEnemies, restartGame;
-	public boolean saveGame, spawnBlue, npcSpawn, showMessageGameOver, fadeOut, fadeIn, fadeMenu;
-	public int mx, my;
-	public static int curLevel;
-	public static final int MAX_LEVEL = 10;
-	public static int redFrames = 0, bossTimer = 0, bossTimerFrames = 0, sceneFrames = 0;
+	
+	private boolean isRunning = true, tutUp, tutDown, tutLeft, tutRight, tutBar, tutShift, tutCdown, color;
+	public static boolean randomize, hideSprite, spawnEnemies, restartGame, fadeOut;
+	public boolean saveGame, spawnBlue, npcSpawn, showMessageGameOver, fadeIn, fadeMenu;
+	
 	private int framesGameOver, bossFrames, randFrames, blackoutFrames, space, blackinFrames, nextlvlFrames,
-			pauseFrames, musicFrames, tut;
-
+	pauseFrames, musicFrames, tut, initFrames;
+	
+	public int frames = 0, rectX = 115, rectY = 10, rectH = 1, rectaY = 47, xx, yy, mx, my;
+	public static int orbContagem = 0, orbAtual = 0, orbsPicked = 0, redFrames = 0, 
+					  bossTimer = 0, bossTimerFrames = 0, sceneFrames = 0, curLevel;
+	
+	public static final int MAX_LEVEL = 10, WIDTH = 240, HEIGHT = 240, SCALE = 3;
+	
 	public BufferedImage[] spacebar;
 	private BufferedImage image;
 	public BufferedImage redmap;
-	public int frames = 0, rectX = 115, rectY = 10, rectH = 1, rectaY = 47;
-	public int xx, yy;
-	public static int orbContagem = 0, orbAtual = 0, orbsPicked = 0;
-
+	
 	public static List<Entity> entities;
 	public static List<Enemy> enemies;
 	public static Spritesheet spritesheet;
@@ -69,7 +70,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 	public UI ui;
 
 	public static String gameState = "SPLASH_SCREEN";
-
+	
 	public Game()
 	{
 		addKeyListener(this);
@@ -80,29 +81,31 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		initFrame();
 
 		image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
+		
 		try
-		{
-			redmap = ImageIO.read(getClass().getResource("/red.png"));
-		}
+		{ redmap = ImageIO.read(getClass().getResource("/red.png")); }
 
 		catch (IOException e1)
-		{
-			e1.printStackTrace();
-		}
+		{ e1.printStackTrace(); }
 
 		curLevel = SaveGame.latestCompletedLevel() + 1;
 		
 		spritesheet = new Spritesheet("/spritesheet.png");
+		
 		player = new Player(0, 0, 16, 16, 1, spritesheet.getSprite(32, 0, 16, 16));
 
 		entities = new ArrayList<Entity>();
 		enemies = new ArrayList<Enemy>();
+		
 		world = new World(curLevel);
 		ui = new UI();
+		
 		spacebar = new BufferedImage[2];
 		spacebar[0] = spritesheet.getSprite(101, 116, 40, 11);
 		spacebar[1] = spritesheet.getSprite(59, 116, 40, 11);
+		
 		red = new Red(0, 0, 14, 16, 1, null);
+		
 		keysColor = new Color(
 						new Random().nextInt(256),
 						new Random().nextInt(256),
@@ -120,12 +123,10 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		Image imagem = null;
 
 		try
-		{
-			imagem = ImageIO.read(getClass().getResource("/icon.png"));
-		} catch (IOException e)
-		{
-			e.printStackTrace();
-		}
+		{ imagem = ImageIO.read(getClass().getResource("/icon.png")); }
+		
+		catch (IOException e)
+		{ e.printStackTrace(); }
 
 		frame.setIconImage(imagem);
 		frame.setAlwaysOnTop(true);
@@ -146,12 +147,10 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		isRunning = false;
 
 		try
-		{
-			thread.join();
-		} catch (InterruptedException e)
-		{
-			e.printStackTrace();
-		}
+		{ thread.join(); }
+		
+		catch (InterruptedException e)
+		{ e.printStackTrace(); }
 	}
 
 	public static void main(String[] args)
@@ -174,9 +173,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		}
 
 		if (curLevel != MAX_LEVEL && !gameState.equals("SPLASH_SCREEN"))
-		{
-			Sound.bgm.loop();
-		} 
+		{ Sound.bgm.loop(); } 
 		
 		if(curLevel == MAX_LEVEL && gameState != "END")
 		{
@@ -229,15 +226,13 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 
 		if (gameState == "TRANSITION")
 		{
-			fadeOut = true;
 			nextlvlFrames++;
-			if (nextlvlFrames > 40)
+			
+			if (nextlvlFrames == 1)
+			{ fadeOut = true; }
+			
+			if (nextlvlFrames == 60)
 			{
-				fadeIn = true;
-			}
-			if (blackinFrames > 24)
-			{
-				blackoutFrames = 0;
 				nextlvlFrames = 0;
 				
 				SaveGame.save(String.valueOf(curLevel));
@@ -274,15 +269,14 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 
 		if (gameState == "TRANSITION2")
 		{
-			fadeOut = true;
 			nextlvlFrames++;
-			if (nextlvlFrames > 40)
-			{
+			
+			if(nextlvlFrames == 1)
+			{ fadeOut = true; }
+			
+			if (nextlvlFrames == 60)
+			{ 
 				fadeIn = true;
-			}
-			if (blackinFrames > 24)
-			{
-				blackoutFrames = 0;
 				nextlvlFrames = 0;
 				gameState = "SCENE3";
 			}
@@ -430,129 +424,57 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 				pauseFrames = 0;
 			}
 		}
+		
+		// Level intro
 		if (gameState == "SCENE1")
 		{
+			boolean canChangeState = false;
+			
 			if (curLevel != MAX_LEVEL)
-			{
-				player.updateCamera();
-			}
-
-			if (curLevel == 1)
-			{
-				g.setColor(new Color(0, 250, 0, 200));
-				if (rectY == 10)
-				{
-					Sound.start.play();
-				}
-				if (rectY != 110)
-				{
-					g.fillOval(rectX - 4, rectY, 16, 23);
-
-					if (rectY < 106)
-					{
-						rectY += 5;
-					}
-				} else if (rectY == 110)
-				{
-					Game.gameState = "NORMAL";
-					rectY = 10;
-				}
-			}
-			else if (curLevel == 2)
-			{
-				g.setColor(new Color(0, 250, 0, 200));
-				if (rectY == 10)
-					Sound.start.play();
-				if (rectY != 90)
-				{
-					g.fillOval(rectX + 4, rectY, 16, 23);
-					if (rectY < 90)
-						rectY += 5;
-				} else if (rectY == 90)
-				{
-					Game.gameState = "NORMAL";
-					rectY = 10;
-				}
-			} else if (curLevel == 3)
-			{
-				g.setColor(new Color(0, 250, 0, 200));
-
-				if (rectY == 10)
-				{
-					Sound.start.play();
-				}
-
-				if (rectY != 120)
-				{
-					g.fillOval(rectX + 4, rectY, 16, 23);
-					if (rectY < 120)
-					{
-						rectY += 5;
-					}
-				} else if (rectY == 120)
-				{
-					Game.gameState = "NORMAL";
-					rectY = 10;
-				}
-			} else if (curLevel == 8)
-			{
-
-				g.setColor(new Color(0, 250, 0, 200));
-				if (rectY == 10)
-					Sound.start.play();
-				if (rectY != 65)
-				{
-					g.fillOval(rectX + 4, rectY, 16, 23);
-					if (rectY < 65)
-						rectY += 5;
-				} else if (rectY == 65)
-				{
-					Game.gameState = "NORMAL";
-					rectY = 10;
-				}
-			}
-			if (curLevel == 9)
-			{
-				g.setColor(new Color(0, 250, 0, 200));
-				if (rectY == 10)
-					Sound.start.play();
-				if (rectY != 20)
-				{
-					g.fillOval(rectX + 6, rectY, 16, 23);
-					if (rectY < 20)
-						rectY += 5;
-				} else if (rectY == 20)
-				{
-					Game.gameState = "NORMAL";
-					rectY = 10;
-				}
-			} 
+			{ player.updateCamera(); }
 			
-			else if (curLevel == MAX_LEVEL)
-			{
-				Camera.y = 0;
-				Camera.x = 47;
-				g.setColor(new Color(0, 250, 0, 200));
-				
-				if (rectY == 10)
-				{ Sound.start.play(); }
-				
-				if (rectY != 215)
-				{
-					g.fillOval(rectX + 4, rectY, 16, 23);
-					if (rectY < 215)
-						rectY += 5;
-				} else if (rectY == 215)
-				{
-					Game.gameState = "SCENE2";
-					rectY = 10;
-				}
+			if(!canChangeState)
+			{ ++initFrames; }
+			
+			if (initFrames == 1)
+			{ fadeIn = true; }
+			
+			if (initFrames == 60)
+			{ 
+				canChangeState = true;
+				initFrames = 0;
 			}
 			
-			else
-			{ Game.gameState = "NORMAL"; }
+			if(canChangeState)
+			{
+				if (curLevel == MAX_LEVEL)
+				{
+					Camera.y = 0;
+					Camera.x = 47;
+					g.setColor(new Color(0, 250, 0, 200));
+					
+					if (rectY == 10)
+					{ Sound.start.play(); }
+					
+					if (rectY != 215)
+					{
+						g.fillOval(rectX + 4, rectY, 16, 23);
+						if (rectY < 215)
+							rectY += 5;
+					} 
+					else if (rectY == 215)
+					{
+						Game.gameState = "SCENE2";
+						rectY = 10;
+					}
+				}
+				
+				else
+				{ Game.gameState = "NORMAL"; }
+			}	
 		}
 
+		// Boss intro
 		if (gameState == "SCENE2")
 		{
 
@@ -561,6 +483,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 				Camera.y = 0;
 				Camera.x = 47;
 			}
+			
 			bossFrames++;
 
 			ui.renderBoss(g);
@@ -602,16 +525,15 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			if (bossFrames > 50)
 			{
 				Camera.x = 40;
-				System.out.println(Camera.y);
 				Camera.y += 1; 
 			}
 			
 			if (bossFrames == 135)
 			{
 				randomize = true;
+				
 				if (Red.curLife == Red.redLife)
-					gameState = "NORMAL";
-
+				{ gameState = "NORMAL"; }
 			}
 		}
 
@@ -671,113 +593,81 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 					player.animate();
 				}
 			}
+			
 			if (sceneFrames == 162)
 			{
 				player.index = 0;
 				player.lastDir = 2;
 			}
+			
 			if (sceneFrames == 170)
 			{
 				Sound.portal.play();
 				Camera.y += 5;
 			}
+			
 			if (sceneFrames == 180)
-				Camera.x += 5;
+			{ Camera.x += 5; }
+			
 			if (sceneFrames == 190)
-				Camera.y -= 5;
+			{ Camera.y -= 5; }
+			
 			if (sceneFrames == 200)
-				Camera.x -= 5;
+			{ Camera.x -= 5; }
+			
 			if (sceneFrames > 240)
 			{
 				if (player.getY() > 2)
-				{
-					player.y--;
-				}
+				{ player.y--; }
 			}
+			
 			if (sceneFrames > 250)
 			{
 				fadeOut = true;
 				gameState = "END";
 				sceneFrames = 0;
 			}
-
 		}
-
-		
 
 		if (Game.player.life == 1)
 		{
 			redFrames++;
+			
 			if (redFrames <= 15)
-				g.drawImage(redmap, 0, 0, null);
+			{ g.drawImage(redmap, 0, 0, null); }
+			
 			else if (redFrames >= 45)
-				redFrames = 0;
-
+			{ redFrames = 0; }
 		}
+		
 		if (gameState == "NORMAL" && curLevel != MAX_LEVEL)
-			ui.renderOrb(g);
-
-		if (gameState == "GAME_OVER")
-		{
-			fadeOut = true;
-		}
+		{ ui.renderOrb(g); }
 
 		if (fadeOut == true)
 		{
-			fadeOut = false;
 			Graphics2D g2 = (Graphics2D) g;
 			blackoutFrames++;
-			if (blackoutFrames > 1 && blackoutFrames < 10)
+
+			boolean done = ui.fadeToBlack(g2, blackoutFrames, 1);
+			
+			if(done)
 			{
-				g2.setColor(new Color(0, 0, 0, 100));
-				g2.fillRect(0, 0, Game.WIDTH, Game.HEIGHT);
-			} else if (blackoutFrames >= 10 && blackoutFrames < 20)
-			{
-				g2.setColor(new Color(0, 0, 0, 150));
-				g2.fillRect(0, 0, Game.WIDTH, Game.HEIGHT);
-			} else if (blackoutFrames >= 20 && blackoutFrames < 30)
-			{
-				g2.setColor(new Color(0, 0, 0, 200));
-				g2.fillRect(0, 0, Game.WIDTH, Game.HEIGHT);
-			} else if (blackoutFrames >= 30)
-			{
-				g2.setColor(new Color(0, 0, 0));
-				g2.fillRect(0, 0, Game.WIDTH, Game.HEIGHT);
+				blackoutFrames = 0;
+				fadeOut = false;
 			}
 		}
 
 		if (fadeIn == true)
 		{
-
 			Graphics2D g2 = (Graphics2D) g;
 			blackinFrames++;
-			if (blackinFrames > 1 && blackinFrames < 10)
+			boolean done = ui.fadeFromBlack(g2, blackinFrames, 1);
+			
+			if(done)
 			{
-				g2.setColor(new Color(0, 0, 0, 200));
-				g2.fillRect(0, 0, Game.WIDTH, Game.HEIGHT);
-
-			} else if (blackinFrames >= 10 && blackinFrames < 20)
-			{
-				g2.setColor(new Color(0, 0, 0, 250));
-				g2.fillRect(0, 0, Game.WIDTH, Game.HEIGHT);
-
-			} else if (blackinFrames >= 20 && blackinFrames < 30)
-			{
-				g2.setColor(new Color(0, 0, 0, 100));
-				g2.fillRect(0, 0, Game.WIDTH, Game.HEIGHT);
-
-			} else if (blackinFrames >= 30)
-			{
-				g2.setColor(new Color(0, 0, 0, 0));
-				g2.fillRect(0, 0, Game.WIDTH, Game.HEIGHT);
-
-			}
-			if (blackinFrames > 30)
-			{
-				fadeIn = false;
 				blackinFrames = 0;
+				fadeIn = false;
 			}
-
 		}
 
 		// SCALE IS DONE HERE
@@ -879,11 +769,16 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			}
 		}
 		
-		if (gameState == "NORMAL")
+		if (gameState.equals("NORMAL"))
 		{ ui.render(g); }
 
-		if (Game.gameState == "GAME_OVER")
+		if (gameState.equals("GAME_OVER"))
 		{
+			if(!fadeOut)
+			{
+				g.setColor(Color.black);
+				g.fillRect(0, 0, WIDTH * SCALE, WIDTH * SCALE); 
+			}
 			int xpos = 280;
 			g.setColor(Color.gray);
 			g.setFont(new Font("consolas", Font.BOLD, 33));
@@ -894,7 +789,6 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 
 			if (showMessageGameOver)
 			{
-
 				g.setColor(Color.gray);
 				g.setFont(new Font("consolas", Font.BOLD, 20));
 				g.drawString("Press spacebar to try again", 212, Game.HEIGHT * SCALE / 2 + 32);
@@ -903,6 +797,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 				g.drawString("Press spacebar to try again", 214, Game.HEIGHT * SCALE / 2 + 30);
 			}
 		}
+		
 		if (gameState == "NORMAL")
 		{
 			if (Game.orbsPicked == 20)
@@ -924,7 +819,6 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 
 		if (gameState == "MENU")
 		{
-			
 			if(!fadeMenu)	
 			{
 				++blackoutFrames;
@@ -940,12 +834,12 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			g.drawString("Version: " + GAME_VERSION, 10, Game.HEIGHT * SCALE - 18);
 			g.drawString("Made by J0NATHA", 500, Game.HEIGHT * SCALE - 18);
 			pauseFrames++;
+			
 			if (pauseFrames > 30)
-			{
-				g.drawString("Move/click to start!", 258, Game.HEIGHT * SCALE / 2);
-			}
+			{ g.drawString("Move/click to start!", 258, Game.HEIGHT * SCALE / 2); }
+			
 			if (pauseFrames == 60)
-				pauseFrames = 0;
+			{ pauseFrames = 0; } 
 		}
 
 		if (curLevel == MAX_LEVEL && gameState == "NORMAL")
@@ -1110,6 +1004,12 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			player.right = false;
 
 		}
+		
+		// TODO dev skip, remove
+		if(e.getKeyCode() == KeyEvent.VK_R)
+		{
+			orbAtual = orbContagem;
+		}
 
 		if (e.getKeyCode() != 0)
 		{
@@ -1117,9 +1017,12 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			{ gameState = "NORMAL"; }
 			
 			if (gameState == "MENU")
-			{ gameState = "SCENE1"; }
+			{
+				blackoutFrames = 0;
+				gameState = "SCENE1"; 
+			}
 
-			if (gameState == "GAME_OVER")
+			if (gameState == "GAME_OVER" && !fadeOut)
 			{ Game.restartGame = true; }
 		}
 
@@ -1154,9 +1057,10 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		{
 
 			if (gameState == "PAUSE")
-				gameState = "NORMAL";
+			{ gameState = "NORMAL"; }
+			
 			else if (gameState == "NORMAL")
-				gameState = "PAUSE";
+			{ gameState = "PAUSE"; } 
 		}
 	}
 
@@ -1183,9 +1087,12 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		{ gameState = "NORMAL"; }
 
 		if (gameState == "MENU")
-		{ gameState = "SCENE1"; }
+		{ 
+			blackoutFrames = 0;
+			gameState = "SCENE1"; 
+		}
 
-		if (gameState == "GAME_OVER")
+		if (gameState == "GAME_OVER" && !fadeOut)
 		{ Game.restartGame = true; }
 	}
 

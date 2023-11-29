@@ -16,7 +16,6 @@ public class UI
 	public int opacity = Game.bossTimer * 10;
 	public final BufferedImage orb = (Game.spritesheet.getSprite(67, 3, 8, 8));
 	private int frames = 0;
-	private Integer startFrame;
 
 	public void render(Graphics g)
 	{
@@ -88,13 +87,14 @@ public class UI
 		
 		g.setColor(new Color(200, 200, 200));
 		g.fillRect(0, 0, Game.WIDTH * Game.SCALE, Game.HEIGHT * Game.SCALE);
-		drawIcon(g);
+		drawLogo(g);
 	
 		if(frames <= secondsToFrames(1.8))
 		{ fadeFromBlack(g, frames, 1.8); }
 		
 		if(frames >= secondsToFrames(3))
 		{
+
 			boolean done = fadeToBlack(g, frames, 3);
 			
 			if(done)
@@ -111,10 +111,7 @@ public class UI
 	{
 		final double alphaPerFrame = 255.0 / secondsToFrames(duration);	
 		
-		if(startFrame == null)
-		{ startFrame = frames; }
-		
-		int currentFrame = frames - startFrame + 1;
+		int currentFrame = (frames % secondsToFrames(duration)) + 1;
 		
 		int alpha = (int)(255 - (alphaPerFrame * frames));
 		
@@ -124,15 +121,32 @@ public class UI
 		g.fillRect(0, 0, Game.WIDTH * Game.SCALE, Game.HEIGHT * Game.SCALE);
 		
 		if(currentFrame == secondsToFrames(duration))
-		{ 
-			startFrame = null;
-			return true; 
-		}
+		{ return true; }
 		
 		return false;
 	}
 	
-	private void drawIcon(Graphics g)
+	public boolean fadeToBlack(Graphics g, int frames, double duration)
+	{
+		final double alphaPerFrame = 255.0 / secondsToFrames(duration);
+		
+		int currentFrame = (frames % secondsToFrames(duration)) + 1;
+		
+		int alpha = (int)(alphaPerFrame * currentFrame);
+
+		
+		if(currentFrame <= secondsToFrames(duration))
+		{ g.setColor(new Color(0, 0, 0, alpha)); }
+		
+		g.fillRect(0, 0, Game.WIDTH * Game.SCALE, Game.HEIGHT * Game.SCALE);
+		
+		if(currentFrame == secondsToFrames(duration))
+		{ return true; }
+		
+		return false;
+	}
+	
+	private void drawLogo(Graphics g)
 	{
 		try
 		{
@@ -157,31 +171,6 @@ public class UI
 		
 		catch(Exception e)
 		{ e.printStackTrace(); }
-	}
-	
-	private boolean fadeToBlack(Graphics g, int frames, double duration)
-	{
-		final double alphaPerFrame = 255.0 / secondsToFrames(duration); 
-		
-		if(startFrame == null)
-		{ startFrame = frames; }
-		
-		int currentFrame = frames - startFrame + 1;
-		
-		int alpha = (int)(alphaPerFrame * currentFrame);
-		
-		if(currentFrame <= secondsToFrames(duration))
-		{ g.setColor(new Color(0, 0, 0, alpha)); }
-		
-		g.fillRect(0, 0, Game.WIDTH * Game.SCALE, Game.HEIGHT * Game.SCALE);
-		
-		if(currentFrame == secondsToFrames(duration))
-		{
-			startFrame = null;
-			return true; 
-		}
-		
-		return false;
 	}
 	
 	private int secondsToFrames(double seconds)
