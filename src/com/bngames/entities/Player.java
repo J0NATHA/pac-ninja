@@ -20,8 +20,9 @@ public class Player extends Entity
 	public UI ui;
 
 	public int Pmaskx = -3, Pmasky, Pmaskh = 16, Pmaskw = 10, blackoutFrames, frames, 
-				index, maxIndex = 4, maxFrames = 10, lastDir, orbFrames, orbIndex,
-				orbMax = 3, invFrames, rectTime, rectMax = 25, life = 2, soundFrames ;
+				index, maxIndex = 4, maxFrames = 10, currentDirection, lastDirection, 
+				orbFrames, orbIndex, orbMax = 3, invFrames, rectTime, rectMax = 25,
+				life = 2, soundFrames;
 	
 	public static boolean growIt, superHealth;
 	
@@ -70,7 +71,17 @@ public class Player extends Entity
 		
 		ui = new UI();
 	}
-
+	
+	public int getXTile()
+	{
+		return getX() / 16 * 16;
+	}
+	
+	public int getYTile()
+	{
+		return getY() / 16 * 16;
+	}
+	
 	public boolean hasSuperHealth()
 	{ return superHealth; }
 
@@ -95,42 +106,58 @@ public class Player extends Entity
 		{
 			if (right)
 			{
-				lastDir = 1;
+				currentDirection = 1;
+				
 				if (World.isFree((int) (x + speed), this.getY()))
 				{
 					x += speed;
 					changedDir = true;
 				}
+				
+				else
+				{ fitIn(lastDirection); }	
 			}
 
 			else if (left)
 			{
-				lastDir = -1;
+				currentDirection = -1;
+				
 				if (World.isFree((int) (x - speed), this.getY()))
 				{
 					x -= speed;
 					changedDir = true;
 				}
+				
+				else
+				{ fitIn(lastDirection); }
 			}
 
 			if (up)
 			{
-				lastDir = 2;
+				currentDirection = 2;
+				
 				if (World.isFree(this.getX(), (int) (y - speed)))
 				{
 					y -= speed;
 					changedDir = true;
 				}
+				
+				else
+				{ fitIn(lastDirection); }
 			}
 
 			else if (down)
 			{
-				lastDir = -2;
+				currentDirection = -2;
+				
 				if (World.isFree(this.getX(), (int) (y + speed)))
 				{
 					y += speed;
 					changedDir = true;
 				}
+				
+				else
+				{ fitIn(lastDirection); }
 			}
 		}
 
@@ -164,6 +191,107 @@ public class Player extends Entity
 			Game.gameState = "GAME_OVER";
 		}
 	}
+	
+	private void fitIn(int dir)
+	{
+		final double MOVE_RATE = .1;
+		
+		// Prioritize closest diagonal
+		dir = checkDiagonals(currentDirection);
+		
+		switch(dir)
+		{
+			case 1:
+			{
+				// right
+				if (World.isFree((int) (x + speed), this.getY()))
+				{ x += MOVE_RATE; }
+				
+				return;
+			}
+			case -1:
+			{
+				// left
+				if (World.isFree((int) (x - speed), this.getY()))
+				{ x -= MOVE_RATE; }
+				
+				return;
+			}
+			case 2:
+			{
+				// up
+				if (World.isFree(this.getX(), (int) (y - speed)))
+				{ y -= MOVE_RATE; }
+				
+				return;
+			}
+			case -2:
+			{
+				// down
+				if (World.isFree(this.getX(), (int) (y + speed)))
+				{ y += MOVE_RATE; }
+				
+				return;
+			}
+			default: return;
+		}
+	}
+	
+	private int checkDiagonals(int dir)
+	{
+		switch(dir)
+		{
+			case 1:
+			{ 
+				// Down-Right
+				if(World.isFree(getXTile() + 16, getYTile() + 16))
+				{ return -2; }
+				
+				// Up-Right
+				if(World.isFree(getXTile() + 16, getYTile()))
+				{ return 2; } 
+				
+				return dir;
+			}
+			case -1:
+			{
+				// Down-Left
+				if(World.isFree(getXTile() - 16, getYTile() + 16))
+				{ return -2; }
+				
+				// Up-Left
+				if(World.isFree(getXTile() - 16, getYTile()))
+				{ return 2; } 
+				
+				return dir;	
+			}
+			case 2:
+			{
+				// Up-Right
+				if(World.isFree(getXTile() + 16, getYTile() - 16))
+				{ return 1; }
+				
+				// Up-Left
+				if(World.isFree(getXTile(), getYTile() - 16))
+				{ return -1; } 
+				
+				return dir;
+			}
+			case -2:
+			{
+				// Down-Right
+				if(World.isFree(getXTile() + 16, getYTile() + 16))
+				{ return 1; }
+				
+				// Down-Left
+				if(World.isFree(getXTile(), getYTile() + 16))
+				{ return -1; } 
+				
+				return dir;
+			}
+			default: return dir;
+		}		
+	}
 
 	public void superHealth()
 	{
@@ -184,25 +312,27 @@ public class Player extends Entity
 					
 					Sound.pickup.play();
 					
-					if (Game.orbsPicked < 20)
+					if(Game.orbsPicked == 20)
+					{ return; }
+					
+					// Game.orbsPicked < 20
+					
+					Game.orbsPicked++;
+					
+					if (Game.curLevel == Game.MAX_LEVEL)
 					{
-						Game.orbsPicked++;
-						if (Game.curLevel == Game.MAX_LEVEL)
+						if (new Random().nextInt(100) < 35)
 						{
-							if (new Random().nextInt(100) < 35)
+							if (Game.bossTimer > 1)
 							{
-								if (Game.bossTimer > 1)
-								{
-									Game.bossTimer -= 2;
-								}
+								Game.bossTimer -= 2;
 							}
 						}
 					}
-					return;
 				}
 			}
 			
-			if(current instanceof SuperHealth && Entity.isColliding(this, current))
+			else if(current instanceof SuperHealth && Entity.isColliding(this, current))
 			{
 				superHealth = true;
 				Game.entities.remove(i);
@@ -254,6 +384,21 @@ public class Player extends Entity
 		g.fillOval(Game.player.getX() - Camera.x - Game.player.Pmaskx - 4,
 				Game.player.getY() - Camera.y - 3 - Game.player.Pmasky, Game.player.Pmaskw + 6, Game.player.Pmaskh + 4);
 	}
+	
+	private void fillWallDragRect(Graphics g, int x1, int y1, int x2, int y2)
+	{
+		g.fillRect(
+				getXTile() + x1 - Camera.x,
+				getYTile() + y1 - Camera.y,
+				16, 16
+			);
+			
+			g.fillRect(
+				getXTile() + x2 - Camera.x,
+				getYTile() + y2 - Camera.y,
+				16, 16
+			);
+	}
 
 	public void render(Graphics g)
 	{
@@ -261,16 +406,27 @@ public class Player extends Entity
 		{
 			List<String> states = 
 					new ArrayList<String>(
-							Arrays.asList("NORMAL", "PAUSE", "GAME_OVER") );
+							Arrays.asList("NORMAL", "PAUSE", "GAME_OVER", "SCENE2") );
 			
 			if (states.contains(Game.gameState))
 			{
-				if (growIt == false)
+				if (!growIt)
 				{
-					if (lastDir == 0)
+					// TODO For debugging; remove. 
+					g.setColor(Color.RED);
+					switch(currentDirection)
+					{
+						case 1: fillWallDragRect(g, 16, 16, 16, 0); break;
+						case -1: fillWallDragRect(g, -16, 0, -16, 16); break;
+						case 2: fillWallDragRect(g, 16, -16, 0, -16); break;
+						case -2: fillWallDragRect(g, 0, 16, 16, 16); break;
+						default: break;
+					}
+					
+					if (currentDirection == 0)
 					{ g.drawImage(downDir[0], this.getX() - Camera.x, this.getY() - Camera.y, null); }
 					
-					if (lastDir == 1)
+					if (currentDirection == 1)
 					{
 						if (World.isFree((int) (x + speed), getY()))
 						{
@@ -286,7 +442,7 @@ public class Player extends Entity
 						}
 					} 
 					
-					else if (lastDir == -1)
+					else if (currentDirection == -1)
 					{
 						if (World.isFree((int) (x - speed), getY()))
 						{
@@ -303,7 +459,7 @@ public class Player extends Entity
 						}
 					} 
 					
-					else if (lastDir == 2)
+					else if (currentDirection == 2)
 					{
 						if (World.isFree(getX(), (int) (y - speed)))
 						{
@@ -320,7 +476,7 @@ public class Player extends Entity
 						}
 					} 
 					
-					else if (lastDir == -2)
+					else if (currentDirection == -2)
 					{
 						if (World.isFree(getX(), (int) (y + speed)))
 						{
@@ -453,16 +609,16 @@ public class Player extends Entity
 				y = 30;
 			}
 
-			if (lastDir == 1)
+			if (currentDirection == 1)
 			{ g.drawImage(rightDir[index], this.getX() - Camera.x, this.getY() - Camera.y, null); }
 
-			else if (lastDir == -1)
+			else if (currentDirection == -1)
 			{ g.drawImage(leftDir[index], this.getX() - Camera.x, this.getY() - Camera.y, null); }
 			
-			else if (lastDir == 2)
+			else if (currentDirection == 2)
 			{ g.drawImage(upDir[index], this.getX() - Camera.x, this.getY() - Camera.y, null); }
 			
-			else if (lastDir == -2)
+			else if (currentDirection == -2)
 			{ g.drawImage(downDir[index], this.getX() - Camera.x, this.getY() - Camera.y, null); }
 		}
 	}

@@ -32,7 +32,7 @@ public class UI
 		g.setColor(Color.orange);
 		g.drawRoundRect(157, 684, (10 * 40) + 1, 25, 5, 4);
 	}
-
+	
 	public int animateSpaceBar(Graphics g, int space, BufferedImage[] spacebar)
 	{
 		int SCALE = Game.SCALE;

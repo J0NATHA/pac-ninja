@@ -365,19 +365,28 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		g.fillRect(0, 0, WIDTH, HEIGHT);
 
 		world.render(g);
+
 		Collections.sort(entities, Entity.nodeSorter);
 		if (Game.curLevel == MAX_LEVEL)
 		{
-			if (gameState != "SCENE3")
-			{ g.drawImage(Game.spritesheet.getSprite(43, 136, 20, 20), 158 - Camera.x, 0 - Camera.y, null); }
+			if (gameState != "SCENE3" && gameState != "LEVEL_SELECT_CHANGED")
+			{ 
+				g.drawImage(
+					Game.spritesheet.getSprite(43, 136, 20, 20), 158 - Camera.x, 0 - Camera.y, null); 
+			}
+			
 			if (gameState == "SCENE3")
 			{
 				if (sceneFrames < 240)
-				{
-					g.drawImage(Game.spritesheet.getSprite(43, 136, 20, 20), 158 - Camera.x, 0 - Camera.y, null);
-				} else if (sceneFrames >= 240)
-				{
-					g.drawImage(Game.spritesheet.getSprite(120, 136, 20, 20), 158 - Camera.x, 0 - Camera.y, null);
+				{ 
+					g.drawImage(
+						Game.spritesheet.getSprite(43, 136, 20, 20), 158 - Camera.x, 0 - Camera.y, null); 
+				}
+				
+				else if (sceneFrames >= 240)
+				{ 
+					g.drawImage(
+						Game.spritesheet.getSprite(120, 136, 20, 20), 158 - Camera.x, 0 - Camera.y, null); 
 				}
 			}
 		}
@@ -446,10 +455,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			if(canChangeState)
 			{
 				if (curLevel == MAX_LEVEL)
-				{
-					Camera.y = 0;
-					Camera.x = 47;
-					
+				{	
 					g.setColor(new Color(0, 250, 0, 200));
 					
 					if (rectY == 10)
@@ -479,12 +485,6 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		// Boss intro
 		if (gameState == "SCENE2")
 		{
-			if(bossFrames == 0)
-			{
-				Camera.y = 0;
-				Camera.x = 47;
-			}
-			
 			bossFrames++;
 
 			ui.renderBoss(g);
@@ -523,13 +523,13 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 					Camera.x += 5;
 				}
 			}
-			if (bossFrames > 50)
+			if (bossFrames > 50 && bossFrames < 147)
 			{
 				Camera.x = 40;
 				Camera.y += 1; 
 			}
 			
-			if (bossFrames == 135)
+			if (bossFrames == 180)
 			{
 				randomize = true;
 				
@@ -547,7 +547,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			
 			if (sceneFrames == 1)
 			{
-				player.lastDir = 1;
+				player.currentDirection = 1;
 				Sound.scream.play();
 			}
 			if (sceneFrames > 10)
@@ -576,7 +576,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			}
 			
 			if (sceneFrames == 63)
-			{ player.lastDir = 2; }
+			{ player.currentDirection = 2; }
 			
 			if (sceneFrames > 65)
 			{
@@ -589,7 +589,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			}
 			
 			if (sceneFrames == 100)
-			{ player.lastDir = 1; }
+			{ player.currentDirection = 1; }
 			
 			if (sceneFrames > 100)
 			{
@@ -603,7 +603,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			if (sceneFrames == 162)
 			{
 				player.index = 0;
-				player.lastDir = 2;
+				player.currentDirection = 2;
 			}
 			
 			if (sceneFrames == 170)
@@ -894,19 +894,21 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		{
 			blackoutFrames++;
 			
-			double fadeOutDuration = .7;
+			final double fadeOutDuration = .7;
+			final double fadeInDuration = .5;
 			
 			if(blackoutFrames < UI.secondsToFrames(fadeOutDuration))
 			{
 				boolean done = ui.fadeBlack(g, blackoutFrames, fadeOutDuration, true);
 				
 				if(done)
-				{ World.restartGame(curLevel); }				
+				{ 
+					Camera.place(curLevel);
+					World.restartGame(curLevel); 
+				}				
 			}
 			else
 			{
-				double fadeInDuration = .5;
-				
 				boolean done = ui.fadeBlack(g, blackoutFrames, fadeInDuration, false);
 				
 				if(done)
@@ -983,6 +985,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 				gameState = "LEVEL_SELECT_CHANGED";
 			}
 			
+			player.lastDirection = player.currentDirection;
 			player.right = true;
 			player.left = false;
 			player.up = false;
@@ -1008,6 +1011,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 				gameState = "LEVEL_SELECT_CHANGED";
 			}
 			
+			player.lastDirection = player.currentDirection;
 			player.left = true;
 			player.right = false;
 			player.down = false;
@@ -1024,6 +1028,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			if (gameState == "PAUSE")
 			{ gameState = "NORMAL"; }
 
+			player.lastDirection = player.currentDirection;
 			player.up = true;
 			player.left = false;
 			player.right = false;
@@ -1041,15 +1046,12 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			if (gameState == "PAUSE")
 			{ gameState = "NORMAL"; }
 
+			player.lastDirection = player.currentDirection;
 			player.down = true;
 			player.up = false;
 			player.left = false;
 			player.right = false;
 		}
-		
-		// TODO dev skip, remove
-		if(e.getKeyCode() == KeyEvent.VK_R)
-		{ orbAtual = orbContagem; }
 		
 		if (e.getKeyCode() == KeyEvent.VK_SPACE)
 		{
