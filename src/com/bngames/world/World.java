@@ -297,7 +297,12 @@ public class World
 				{ continue; }
 				
 				Tile tile = tiles[xx + (yy * WIDTH)];
-				tile.render(g);
+			
+				try 
+				{ tile.render(g);}
+				
+				catch(Exception e)
+				{ e.printStackTrace(); }
 			}
 		}
 	}

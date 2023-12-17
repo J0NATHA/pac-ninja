@@ -10,6 +10,7 @@ import javax.imageio.ImageIO;
 import com.bngames.entities.Player;
 import com.bngames.entities.Red;
 import com.bngames.main.Game;
+import com.bngames.main.SaveGame;
 
 public class UI
 {
@@ -32,6 +33,45 @@ public class UI
 		g.drawRoundRect(157, 684, (10 * 40) + 1, 25, 5, 4);
 	}
 
+	public int animateSpaceBar(Graphics g, int space, BufferedImage[] spacebar)
+	{
+		int SCALE = Game.SCALE;
+
+		space++;
+		
+		if (space <= 10)
+		{ g.drawImage(spacebar[0], 101 * SCALE, (230 * SCALE) - 4, 33 * SCALE, 7 * SCALE, null); } 
+		
+		else if (space < 22)
+		{ g.drawImage(spacebar[1], 101 * SCALE, (230 * SCALE) - 4, 33 * SCALE, 7 * SCALE, null); }
+		
+		else
+		{ space = 0; }
+		
+		return space;
+	}
+	
+	public int animateSpaceBar(Graphics g, int space, BufferedImage[] spacebar, int x, int y, int scale)
+	{
+		int SCALE = Game.SCALE + scale;
+
+		space++;
+		
+		if (space < 15)
+		{ g.drawImage(spacebar[0], x, y, 33 * SCALE, 7 * SCALE, null); } 
+		
+		else if (space < 60)
+		{ g.drawImage(spacebar[1], x, y, 33 * SCALE, 7 * SCALE, null); }
+		
+		else
+		{ 
+			g.drawImage(spacebar[1], x, y, 33 * SCALE, 7 * SCALE, null);
+			space = 0;
+		}
+		
+		return space;
+	}
+	
 	public void renderOrb(Graphics g)
 	{
 		g.drawImage(orb, 107, 3, null);
@@ -67,18 +107,73 @@ public class UI
 		}
 	}
 
-	public void drawLevelSelectMenu(Graphics g)
+	public void drawLevelSelectMenu(Graphics g, int level)
 	{
-		g.drawString("Level selector", Game.WIDTH / 2, 10);
-		int level = 1;
-		for (int row = 1; row < 4; ++row)
+		g.setFont(new Font("consolas", Font.CENTER_BASELINE, 52));
+		g.setColor(Color.WHITE);
+		g.drawString("Level selection", 144, 159);
+		g.drawString("Level selection", 146, 161);
+		
+		g.setColor(Color.BLACK);
+		g.setFont(new Font("consolas", Font.CENTER_BASELINE, 52));
+		g.drawString("Level selection", 145, 160);
+
+		g.setColor(Color.GRAY);
+		g.fillRect(210, 210, 300, 300);
+		
+		g.setColor(Color.BLACK);
+		g.fillRect(220, 220, 280, 280);
+		
 		{
-			for (int col = 1; col < 4; ++col)
-			{
-				g.drawString("Level " + level, 50 * col, 60 * row);
-				level++;
-			}
+			int[] x = { 140, 200, 200 };
+			int[] y = { 360, 320, 400 };
+			
+			g.setColor(Color.WHITE);
+			
+			if(level == 1)
+			{ g.setColor(new Color(0, 0, 0, 100)); }
+			
+			g.fillPolygon(x, y, 3);
+			
+			x[0] += 5; x[1] -= 3; x[2] -= 3;
+			y[1] += 5; y[2] -= 5;
+			
+			g.setColor(Color.GRAY);
+			
+			if(level == 1)
+			{ g.setColor(new Color(0, 0, 0, 100)); }
+			
+			g.fillPolygon(x, y, 3);
+		}		
+		{
+						
+			int[] x = { 580, 520, 520 };
+			int[] y = { 360, 320, 400 };
+
+			g.setColor(Color.WHITE);
+			
+			if(Game.curLevel == Game.MAX_LEVEL || Game.curLevel == SaveGame.latestCompletedLevel() + 1)
+			{ g.setColor(new Color(0, 0, 0, 100)); }
+			
+			g.fillPolygon(x, y, 3);
+			
+			x[0] -= 5; x[1] += 3; x[2] += 3;
+			y[1] += 5; y[2] -= 5;
+			
+			g.setColor(Color.GRAY);
+			
+			if(Game.curLevel == Game.MAX_LEVEL || Game.curLevel == SaveGame.latestCompletedLevel() + 1)
+			{ g.setColor(new Color(0, 0, 0, 100)); }
+			
+			g.fillPolygon(x, y, 3);
 		}
+		
+		double progressPercentage = 1 - ((double)level / Game.MAX_LEVEL);		
+		int blueGreen = (int)(255 * progressPercentage);
+		
+		g.setColor(new Color(255, blueGreen, blueGreen, 255));
+		g.setFont(new Font("consolas", Font.CENTER_BASELINE, 200));
+		g.drawString(String.valueOf(level), level != Game.MAX_LEVEL ? 310 : 250, 420);
 	}
 	
 	public boolean drawSplashScreen(Graphics g)
@@ -89,13 +184,13 @@ public class UI
 		g.fillRect(0, 0, Game.WIDTH * Game.SCALE, Game.HEIGHT * Game.SCALE);
 		drawLogo(g);
 	
-		if(frames <= secondsToFrames(1.8))
-		{ fadeFromBlack(g, frames, 1.8); }
+		if(frames < secondsToFrames(1.8))
+		{ fadeBlack(g, frames, 1.8, false); }
 		
 		if(frames >= secondsToFrames(3))
 		{
 
-			boolean done = fadeToBlack(g, frames, 3);
+			boolean done = fadeBlack(g, frames, 3, true);
 			
 			if(done)
 			{
@@ -107,33 +202,18 @@ public class UI
 		return false;
 	}
 	
-	public boolean fadeFromBlack(Graphics g, int frames, double duration)
-	{
-		final double alphaPerFrame = 255.0 / secondsToFrames(duration);	
-		
-		int currentFrame = (frames % secondsToFrames(duration)) + 1;
-		
-		int alpha = (int)(255 - (alphaPerFrame * frames));
-		
-		if(currentFrame <= secondsToFrames(duration))
-		{ g.setColor(new Color(0, 0, 0, alpha)); }
-		
-		g.fillRect(0, 0, Game.WIDTH * Game.SCALE, Game.HEIGHT * Game.SCALE);
-		
-		if(currentFrame == secondsToFrames(duration))
-		{ return true; }
-		
-		return false;
-	}
-	
-	public boolean fadeToBlack(Graphics g, int frames, double duration)
+	public boolean fadeBlack(Graphics g, int frames, double duration, boolean toBlack)
 	{
 		final double alphaPerFrame = 255.0 / secondsToFrames(duration);
 		
 		int currentFrame = (frames % secondsToFrames(duration)) + 1;
 		
-		int alpha = (int)(alphaPerFrame * currentFrame);
-
+		int alpha;
+		
+		if(toBlack)
+		{ alpha = (int)(alphaPerFrame * currentFrame); }		
+		else
+		{ alpha = (int)(255 - (alphaPerFrame * currentFrame)); }
 		
 		if(currentFrame <= secondsToFrames(duration))
 		{ g.setColor(new Color(0, 0, 0, alpha)); }
@@ -155,6 +235,9 @@ public class UI
 			if(Game.curLevel == Game.MAX_LEVEL)
 			{ path = "/LogoRN.png"; }
 			
+			if(Game.completed)
+			{ path = "/LogoCompleted.png"; }
+			
 			final BufferedImage logo = ImageIO.read(getClass().getResource(path));
 			
 			final int logoSize = 480;
@@ -173,7 +256,7 @@ public class UI
 		{ e.printStackTrace(); }
 	}
 	
-	private int secondsToFrames(double seconds)
+	public static int secondsToFrames(double seconds)
 	{
 		// 60 frames == 1 sec
 		return (int)(seconds * 60);

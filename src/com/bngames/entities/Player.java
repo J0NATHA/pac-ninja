@@ -4,6 +4,9 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
 import com.bngames.graficos.UI;
@@ -14,23 +17,22 @@ import com.bngames.world.World;
 
 public class Player extends Entity
 {
-
 	public UI ui;
 
-	public int Pmaskx = -3, Pmasky = 0, Pmaskh = 16, Pmaskw = 10, blackoutFrames = 0;
-	public boolean right, up, left, down, changedDir = false, isDamaged = false, hitOnce = false, sneak = false;
-	public static boolean growIt = false, superHealth;
-	public int frames = 0, index = 0, maxIndex = 4, maxFrames = 10, lastDir = 0, orbFrames = 0, orbIndex = 0,
-			orbMax = 3, invFrames = 0;
-	public int rectTime = 0, rectMax = 25;
-	public int life = 2, soundFrames = 0;
-//	private double speed =1.5;
-	public BufferedImage[] upDir, downDir, leftDir, rightDir, orbX;
-	public BufferedImage[] wallHold;
+	public int Pmaskx = -3, Pmasky, Pmaskh = 16, Pmaskw = 10, blackoutFrames, frames, 
+				index, maxIndex = 4, maxFrames = 10, lastDir, orbFrames, orbIndex,
+				orbMax = 3, invFrames, rectTime, rectMax = 25, life = 2, soundFrames ;
+	
+	public static boolean growIt, superHealth;
+	
+	public boolean right, up, left, down, changedDir, isDamaged, hitOnce, sneak;
+	
+	public BufferedImage[] upDir, downDir, leftDir, rightDir, orbX, wallHold;
 
 	public Player(int x, int y, int width, int height, int speed, BufferedImage sprite)
 	{
 		super(x, y, width, height, speed, sprite);
+		
 		wallHold = new BufferedImage[4];
 		wallHold[0] = Game.spritesheet.getSprite(48, 96, 16, 16);
 		wallHold[1] = Game.spritesheet.getSprite(48, 80, 16, 16);
@@ -65,14 +67,12 @@ public class Player extends Entity
 		orbX[0] = Game.spritesheet.getSprite(55, 15, 16, 16);
 		orbX[1] = Game.spritesheet.getSprite(70, 15, 16, 16);
 		orbX[2] = Game.spritesheet.getSprite(85, 15, 16, 16);
+		
 		ui = new UI();
-
 	}
 
 	public boolean hasSuperHealth()
-	{
-		return superHealth;
-	}
+	{ return superHealth; }
 
 	public void tick()
 	{
@@ -85,7 +85,8 @@ public class Player extends Entity
 		if (!isDamaged)
 		{
 			if (sneak)
-			{ speed = 0.2; } 
+			{ speed = 0.25; } 
+			
 			else
 			{ speed = 1; }
 		}
@@ -180,7 +181,9 @@ public class Player extends Entity
 				{
 					Game.entities.remove(i);
 					Game.orbAtual++;
+					
 					Sound.pickup.play();
+					
 					if (Game.orbsPicked < 20)
 					{
 						Game.orbsPicked++;
@@ -256,7 +259,11 @@ public class Player extends Entity
 	{
 		if (life > 0)
 		{
-			if (Game.gameState == "NORMAL" || Game.gameState == "GAME_OVER" || Game.gameState == "PAUSE")
+			List<String> states = 
+					new ArrayList<String>(
+							Arrays.asList("NORMAL", "PAUSE", "GAME_OVER") );
+			
+			if (states.contains(Game.gameState))
 			{
 				if (growIt == false)
 				{
@@ -343,7 +350,6 @@ public class Player extends Entity
 
 				if (growIt)
 				{
-					
 					rectTime++;
 					
 					if (rectTime > 15)
@@ -406,6 +412,7 @@ public class Player extends Entity
 							
 							if (life == 1)
 							{ life++; }
+							
 							orbIndex = 0;
 							rectTime = 0;
 							Game.orbsPicked = 0;
@@ -447,26 +454,16 @@ public class Player extends Entity
 			}
 
 			if (lastDir == 1)
-			{
-				g.drawImage(rightDir[index], this.getX() - Camera.x, this.getY() - Camera.y, null);
-			}
+			{ g.drawImage(rightDir[index], this.getX() - Camera.x, this.getY() - Camera.y, null); }
 
 			else if (lastDir == -1)
-			{
-
-				g.drawImage(leftDir[index], this.getX() - Camera.x, this.getY() - Camera.y, null);
-
-			} else if (lastDir == 2)
-			{
-
-				g.drawImage(upDir[index], this.getX() - Camera.x, this.getY() - Camera.y, null);
-
-			} else if (lastDir == -2)
-			{
-
-				g.drawImage(downDir[index], this.getX() - Camera.x, this.getY() - Camera.y, null);
-
-			}
+			{ g.drawImage(leftDir[index], this.getX() - Camera.x, this.getY() - Camera.y, null); }
+			
+			else if (lastDir == 2)
+			{ g.drawImage(upDir[index], this.getX() - Camera.x, this.getY() - Camera.y, null); }
+			
+			else if (lastDir == -2)
+			{ g.drawImage(downDir[index], this.getX() - Camera.x, this.getY() - Camera.y, null); }
 		}
 	}
 }

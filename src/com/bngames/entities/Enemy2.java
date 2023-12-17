@@ -59,24 +59,12 @@ public class Enemy2 extends Entity
 
 		chaseStart();
 
-//		ghostFrames2++;
-//		if(ghostFrames2==60*2) {
-//			ghostFrames2=0;
-//			if(ghostMode2==false) {
-//				ghostMode2=true;
-//			}else
-//				ghostMode2=false;
-//		}
-		if (isCollidingWithPlayer())
+		if (isCollidingWithPlayer() && !Game.player.isDamaged)
 		{
-			if (Game.player.isDamaged == false)
-			{
-				Game.player.life -= 2;
-				Sound.hit.play();
-				Game.player.isDamaged = true;
-			}
+			Game.player.life -= 2;
+			Sound.hit.play();
+			Game.player.isDamaged = true;	
 		}
-
 	}
 
 	public void animate()
