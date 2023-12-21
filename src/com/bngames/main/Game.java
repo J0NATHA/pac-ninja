@@ -264,7 +264,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			restartGame = false;
 
 			Game.enemies.removeAll(enemies);
-			Game.gameState = "NORMAL";
+			Game.gameState = "SCENE1";
 			
 			blackoutFrames = 0;
 			
@@ -274,7 +274,6 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			if (curLevel == MAX_LEVEL)
 			{
 				Red.curLife = 0;
-				Game.gameState = "SCENE2";
 				this.bossFrames = 0;
 				bossTimer = 0;
 			}
@@ -303,7 +302,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			randFrames++;
 			
 			if (randFrames == 30)
-			{ Sound.bossound2.play(); }
+			{ Sound.get().bossound2.play(); }
 			
 			if (randFrames > 30 && randFrames < 60)
 			{
@@ -340,12 +339,12 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 				bossTimer = 0;
 
 				if (player.life == 2)
-				{ Sound.hit.play(); }
+				{ Sound.get().hit.play(); }
 				
 				else if (player.life == 1)
 				{
 					player.life--;
-					Sound.hit.play();
+					Sound.get().hit.play();
 					this.bossFrames = 0;
 				}
 			}
@@ -438,47 +437,31 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			if (pauseFrames == 60)
 			{ pauseFrames = 0; }
 		}
+		
 		// Level intro
 		if (gameState == "SCENE1")
 		{
-			boolean canChangeState = initFrames == 60;
-			
-			if (curLevel != MAX_LEVEL)
-			{ player.updateCamera(); }
+			boolean canChangeState = initFrames == 120;
 			
 			if(!canChangeState)
 			{ ++initFrames; }
 			
 			if (initFrames == 1)
-			{ fadeIn = true; }
-
+			{ 
+				Camera.place(curLevel);
+				
+				Sound.get().start.play(); 
+				fadeIn = true; 
+			}
+			
+			canChangeState = player.getY() < 32 ?
+					ui.waitLevelIntro(g, initFrames) :
+					ui.animateLevelIntro(g, initFrames);
+		
 			if(canChangeState)
 			{
-				if (curLevel == MAX_LEVEL)
-				{	
-					g.setColor(new Color(0, 250, 0, 200));
-					
-					if (rectY == 10)
-					{ Sound.start.play(); }
-					
-					if (rectY != 215)
-					{
-						g.fillOval(rectX + 4, rectY, 16, 23);
-						
-						if (rectY < 215)
-						{ rectY += 5; }
-					} 
-					
-					else
-					{
-						Game.gameState = "SCENE2";
-						initFrames = 0;
-						rectY = 10;
-					}
-				}
-				
-				else
-				{ Game.gameState = "NORMAL"; }
+				initFrames = 0;
+				gameState = curLevel == Game.MAX_LEVEL ? "SCENE2" : "NORMAL";
 			}	
 		}
 
@@ -491,6 +474,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 
 			if (bossFrames == 1)
 			{
+				Camera.place(MAX_LEVEL);
 				Red.curLife = 0;
 			}
 
@@ -499,7 +483,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 				if (bossFrames == 10)
 				{
 					Red.curLife++;
-					Sound.boss1.play();
+					Sound.get().boss1.play();
 					Camera.x += 5;
 				}
 				if (bossFrames == 20)
@@ -548,7 +532,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			if (sceneFrames == 1)
 			{
 				player.currentDirection = 1;
-				Sound.scream.play();
+				Sound.get().scream.play();
 			}
 			if (sceneFrames > 10)
 			{
@@ -608,7 +592,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			
 			if (sceneFrames == 170)
 			{
-				Sound.portal.play();
+				Sound.get().portal.play();
 				Camera.y += 5;
 			}
 			
@@ -750,7 +734,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 				if (tut >= 20)
 				{
 					tutCdown = false;
-					Sound.keys.terminate();
+					Sound.get().keys.terminate();
 				
 					if (tutUp && tutDown && tutLeft && tutRight && tutBar && tutShift)
 					{
@@ -853,6 +837,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 
 		if (gameState == "END")
 		{
+			
 			Sound.boss_loop.terminate();
 			sceneFrames++;
 
@@ -903,8 +888,8 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 				
 				if(done)
 				{ 
+					World.restartGame(curLevel);
 					Camera.place(curLevel);
-					World.restartGame(curLevel); 
 				}				
 			}
 			else
@@ -969,7 +954,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		{
 			if (gameState == "TUT" && tutRight == false && tutCdown == false)
 			{
-				Sound.keys.play();
+				Sound.get().keys.play();
 				tutRight = true;
 				tutCdown = true;
 			}
@@ -979,7 +964,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 
 			if(gameState.equals("LEVEL_SELECT") && curLevel < SaveGame.latestCompletedLevel())
 			{
-				Sound.keys.play();
+				Sound.get().keys.play();
 				
 				Game.curLevel++;
 				gameState = "LEVEL_SELECT_CHANGED";
@@ -995,7 +980,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		{
 			if (gameState == "TUT" && tutLeft == false && tutCdown == false)
 			{
-				Sound.keys.play();
+				Sound.get().keys.play();
 				tutCdown = true;
 				tutLeft = true;
 			}
@@ -1005,7 +990,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 
 			if(gameState.equals("LEVEL_SELECT") && curLevel > 1)
 			{
-				Sound.keys.play();
+				Sound.get().keys.play();
 
 				Game.curLevel--;
 				gameState = "LEVEL_SELECT_CHANGED";
@@ -1021,7 +1006,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		{
 			if (gameState == "TUT" && tutUp == false && tutCdown == false)
 			{
-				Sound.keys.play();
+				Sound.get().keys.play();
 				tutCdown = true;
 				tutUp = true;
 			}
@@ -1038,7 +1023,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		{
 			if (gameState == "TUT" && tutDown == false && tutCdown == false)
 			{
-				Sound.keys.play();
+				Sound.get().keys.play();
 				tutCdown = true;
 				tutDown = true;
 			}
@@ -1057,7 +1042,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		{
 			if (gameState == "TUT" && tutBar == false && tutCdown == false)
 			{
-				Sound.keys.play();
+				Sound.get().keys.play();
 				tutCdown = true;
 				tutBar = true;
 			}
@@ -1075,7 +1060,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		{
 			if (gameState == "TUT" && !tutShift && !tutCdown)
 			{
-				Sound.keys.play();
+				Sound.get().keys.play();
 				tutCdown = true;
 				tutShift = true;
 			}

@@ -38,7 +38,7 @@ public class Red extends Entity
 		{
 			Game.player.isDamaged = true;
 			Game.player.life--;
-			Sound.hit.play();
+			Sound.get().hit.play();
 		}
 
 		if (Player.growIt)

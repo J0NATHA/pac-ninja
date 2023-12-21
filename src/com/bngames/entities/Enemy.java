@@ -102,7 +102,7 @@ public class Enemy extends Entity
 			if (Game.player.isDamaged == false)
 			{
 				Game.player.life--;
-				Sound.hit.play();
+				Sound.get().hit.play();
 				Game.player.isDamaged = true;
 			}
 		}

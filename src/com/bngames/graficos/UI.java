@@ -11,6 +11,7 @@ import com.bngames.entities.Player;
 import com.bngames.entities.Red;
 import com.bngames.main.Game;
 import com.bngames.main.SaveGame;
+import com.bngames.world.Camera;
 
 public class UI
 {
@@ -31,6 +32,36 @@ public class UI
 		g.fillRoundRect(158, 685, Game.orbsPicked * 20, 24, 3, 3);
 		g.setColor(Color.orange);
 		g.drawRoundRect(157, 684, (10 * 40) + 1, 25, 5, 4);
+	}
+	
+	public boolean animateLevelIntro(Graphics g, int frame)
+	{		
+		int y = frame * 4;
+		y = clamp(y, 0, Game.player.getY());
+		
+		g.setColor(new Color(0, 250, 0, 150));
+		g.fillOval(Game.player.getX() - Camera.x, y - Camera.y - 4, 16, 23);
+		
+		if(Game.player.hasSuperHealth())
+		{ 
+			g.setColor(new Color(255, 255, 0, 150));
+			g.fillOval(Game.player.getX() - Camera.x - 2, y - Camera.y - 6, 20, 28);
+		}
+		
+		return y == Game.player.getYTile();
+	}
+	
+	public boolean waitLevelIntro(Graphics g, int frame)
+	{
+		g.setColor(new Color(0, 250, 0, 150));
+		g.fillOval(Game.player.getX() - Camera.x, Game.player.getY() - Camera.y - 4, 16, 23);
+		
+		return frame == secondsToFrames(.7);
+	}
+	
+	private int clamp(int current, int min, int max)
+	{
+		return current > max ? max : current < min ? min : current;
 	}
 	
 	public int animateSpaceBar(Graphics g, int space, BufferedImage[] spacebar)
@@ -109,15 +140,6 @@ public class UI
 
 	public void drawLevelSelectMenu(Graphics g, int level)
 	{
-		g.setFont(new Font("consolas", Font.CENTER_BASELINE, 52));
-		g.setColor(Color.WHITE);
-		g.drawString("Level selection", 144, 159);
-		g.drawString("Level selection", 146, 161);
-		
-		g.setColor(Color.BLACK);
-		g.setFont(new Font("consolas", Font.CENTER_BASELINE, 52));
-		g.drawString("Level selection", 145, 160);
-
 		g.setColor(Color.GRAY);
 		g.fillRect(210, 210, 300, 300);
 		

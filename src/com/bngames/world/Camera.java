@@ -12,21 +12,21 @@ public class Camera
 		return Atual < Min ? Min : Atual > Max ? Max : Atual; 
 	}
 	
+	public static void print()
+	{
+		System.out.println("Camera at (" + x + ", " + y + ")");
+	}
+	
 	public static void place(int level)
 	{
-		switch(level)
+		if(level != Game.MAX_LEVEL)
 		{
-			case Game.MAX_LEVEL:
-			{
-				x = 43;
-				y = 0;
-				break;
-			}
-			default:
-			{
-				x = 0;
-				y = 0;
-			}
+			Game.player.updateCamera();
+			return;
 		}
+		
+		// level == Game.MAX_LEVEL
+		x = 43;
+		y = 0;	
 	}
 }

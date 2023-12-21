@@ -310,7 +310,8 @@ public class Player extends Entity
 					Game.entities.remove(i);
 					Game.orbAtual++;
 					
-					Sound.pickup.play();
+					Sound.get().pickup.play();
+					Sound.get().pickup.setVolume(1f);
 					
 					if(Game.orbsPicked == 20)
 					{ return; }
@@ -335,6 +336,7 @@ public class Player extends Entity
 			else if(current instanceof SuperHealth && Entity.isColliding(this, current))
 			{
 				superHealth = true;
+				Sound.get().pickupSuperHealth.play();
 				Game.entities.remove(i);
 			}
 		}
@@ -359,7 +361,8 @@ public class Player extends Entity
 	{
 		if (hitOnce)
 		{
-			Sound.hitwall.play();
+			Sound.get().hitwall.play();
+			
 			hitOnce = false;
 		}
 	}
@@ -367,15 +370,17 @@ public class Player extends Entity
 	public void animateOrb()
 	{
 		orbFrames++;
-		if (orbFrames == 5)
-		{
-			orbFrames = 0;
-			
-			if (orbIndex < 2)
-			{ orbIndex++; }
-			else
-			{ World.generateParticle(5, (int) x + 10, (int) y + 10); }
-		}
+		
+		if (orbFrames != 5)
+		{ return; }
+		
+		orbFrames = 0;
+		
+		if (orbIndex < 2)
+		{ orbIndex++; }
+		
+		else
+		{ World.generateParticle(5, (int) x + 10, (int) y + 10); }
 	}
 
 	private void drawSuperHealth(Graphics g)
@@ -383,21 +388,6 @@ public class Player extends Entity
 		g.setColor(new Color(255, 255, 0, 150));
 		g.fillOval(Game.player.getX() - Camera.x - Game.player.Pmaskx - 4,
 				Game.player.getY() - Camera.y - 3 - Game.player.Pmasky, Game.player.Pmaskw + 6, Game.player.Pmaskh + 4);
-	}
-	
-	private void fillWallDragRect(Graphics g, int x1, int y1, int x2, int y2)
-	{
-		g.fillRect(
-				getXTile() + x1 - Camera.x,
-				getYTile() + y1 - Camera.y,
-				16, 16
-			);
-			
-			g.fillRect(
-				getXTile() + x2 - Camera.x,
-				getYTile() + y2 - Camera.y,
-				16, 16
-			);
 	}
 
 	public void render(Graphics g)
@@ -412,17 +402,6 @@ public class Player extends Entity
 			{
 				if (!growIt)
 				{
-					// TODO For debugging; remove. 
-					g.setColor(Color.RED);
-					switch(currentDirection)
-					{
-						case 1: fillWallDragRect(g, 16, 16, 16, 0); break;
-						case -1: fillWallDragRect(g, -16, 0, -16, 16); break;
-						case 2: fillWallDragRect(g, 16, -16, 0, -16); break;
-						case -2: fillWallDragRect(g, 0, 16, 16, 16); break;
-						default: break;
-					}
-					
 					if (currentDirection == 0)
 					{ g.drawImage(downDir[0], this.getX() - Camera.x, this.getY() - Camera.y, null); }
 					
@@ -517,7 +496,7 @@ public class Player extends Entity
 							
 							if (blackoutFrames > 0 && blackoutFrames < 5)
 							{
-								Sound.growIt.play();
+								Sound.get().growIt.play();
 								g2.setColor(new Color(0, 250, 0, 50));
 								g2.fillRect(0, 0, Game.WIDTH, Game.HEIGHT);
 							} 
@@ -557,7 +536,7 @@ public class Player extends Entity
 
 								if (Red.curLife > 0)
 								{
-									Sound.bossound3.play();
+									Sound.get().bossound3.play();
 									World.generateParticle2(200, Camera.x + 10 + (Red.curLife * 30), Camera.y + 15);
 									Red.curLife--;
 								}

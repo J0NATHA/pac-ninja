@@ -3,31 +3,22 @@ package com.bngames.main;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
-import java.io.IOException;
 
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.UnsupportedAudioFileException;
+import javax.sound.sampled.FloatControl;
 
 public class Sound
 {
-	public static Clips hit = load("/hit.wav", 1);
-	public static Clips hitwall = load("/hitwall.wav", 1);
-	public static Clips growIt = load("/growIt.wav", 1);
-	public static Clips entrance = load("/entrance.wav", 1);
-	public static Clips pickup = load("/pickup.wav", 1);
-	public static Clips keys = load("/keys.wav", 1);
-	public static Clips start = load("/start.wav", 1);
-	public static Clips sad1 = load("/sad1.mp3", 1);
-	public static Clips bgm = load("/music1.wav", 1);
-	public static Clips boss_opening = load("/boss_opening.wav", 1);
-	public static Clips boss_loop = load("/boss_loop.wav", 1);
-	public static Clips boss1 = load("/boss1.wav", 1);
-	public static Clips bossound2 = load("/bossound2.wav", 1);
-	public static Clips bossound3 = load("/bossound3.wav", 1);
-	public static Clips scream = load("/scream.wav", 1);
-	public static Clips portal = load("/portal.wav", 1);
+	private static Sound sound;
+	
+	public static Sound get()
+	{
+		if(sound == null)
+		{ sound = new Sound(); }
+		
+		return sound;
+	}
 	
 	public static class Clips
 	{
@@ -35,11 +26,10 @@ public class Sound
 		private int p;
 		private int count;
 
-		public Clips(byte[] buffer, int count)
-				throws LineUnavailableException, IOException, UnsupportedAudioFileException
+		public Clips(byte[] buffer, int count, boolean maxVolume) 
 		{
 			if (buffer == null)
-				return;
+			{ return; }
 
 			clips = new Clip[count];
 			this.count = count;
@@ -49,7 +39,13 @@ public class Sound
 				for (int i = 0; i < count; i++)
 				{
 					clips[i] = AudioSystem.getClip();
+										
 					clips[i].open(AudioSystem.getAudioInputStream(new ByteArrayInputStream(buffer)));
+
+					var gain = (FloatControl) clips[p].getControl(FloatControl.Type.MASTER_GAIN);
+					
+					float volume = maxVolume ? gain.getMaximum() : 0;
+					gain.setValue(volume);
 				}
 			} 
 			catch (Exception e)
@@ -58,13 +54,26 @@ public class Sound
 				e.printStackTrace();
 			}
 		}
+		
+		
+		public void setVolume(float volume)
+		{
 
+		}
+		
 		public synchronized void play()
 		{
 			if (clips == null)
 			{ return; }
 
 			clips[p].stop();
+			
+			try 
+			{ Thread.sleep(0, 1); }
+			
+			catch (InterruptedException e) 
+			{ e.printStackTrace(); }
+			
 			clips[p].setFramePosition(0);
 			clips[p].start();
 			
@@ -77,40 +86,65 @@ public class Sound
 		public void loop()
 		{
 			if (clips == null)
-				return;
+			{ return; }
+			
 			clips[p].loop(300);
 		}
-
+		
 		public void terminate()
 		{
 			clips[p].stop();
 		}
 	}
 
-
-
+	public Clips hit = load("/hit.wav", 1);
+	public Clips hitwall = load("/hitwall.wav", 1);
+	public Clips growIt = load("/growIt.wav", 1);
+	public Clips entrance = load("/entrance.wav", 1);
+	public Clips pickup = load("/pickup.wav", 1);
+	public Clips pickupSuperHealth = load("/pickupSuperHealth.wav", 1);
+	public Clips keys = load("/keys.wav", 1);
+	public Clips start = load("/start.wav", 1);
+	public Clips sad1 = load("/sad1.mp3", 1);
+	public Clips boss1 = load("/boss1.wav", 1);
+	public Clips bossound2 = load("/bossound2.wav", 1);
+	public Clips bossound3 = load("/bossound3.wav", 1);
+	public Clips scream = load("/scream.wav", 1);
+	public Clips portal = load("/portal.wav", 1);
+	
+	// Music is static to avoid multiple instances which created overlapping audio
+	public static Clips bgm = load("/music1.wav", 1);
+	public static Clips boss_opening = load("/boss_opening.wav", 1);
+	public static Clips boss_loop = load("/boss_loop.wav", 1);
+	
 	private static Clips load(String name, int count)
 	{
 		try
 		{
+			final String folder = "/sfx";
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			DataInputStream dis = new DataInputStream(Sound.class.getResourceAsStream(name));
+			DataInputStream dis = new DataInputStream(Sound.class.getResourceAsStream(folder + name));
 
 			byte[] buffer = new byte[1024];
 			int read = 0;
+			
 			while ((read = dis.read(buffer)) >= 0)
 			{
 				baos.write(buffer, 0, read);
 			}
+			
 			dis.close();
 			byte[] data = baos.toByteArray();
-			return new Clips(data, count);
+			
+			boolean maxVolume = name == "/pickup.wav";
+			
+			return new Clips(data, count, maxVolume);
 		} 
 		catch (Exception e)
 		{
 			try
 			{
-				return new Clips(null, 0);
+				return new Clips(null, 0, false);
 			}
 			catch (Exception ee)
 			{

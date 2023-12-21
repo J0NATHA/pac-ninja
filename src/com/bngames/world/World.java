@@ -45,7 +45,7 @@ public class World
 
 				try
 				{
-					map = ImageIO.read(getClass().getResource("/level" + level + ".png"));
+					map = ImageIO.read(getClass().getResource("/levels/level" + level + ".png"));
 					Game.curLevel = level;
 				} 
 				
