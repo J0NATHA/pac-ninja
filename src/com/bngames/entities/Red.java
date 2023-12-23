@@ -11,13 +11,11 @@ import com.bngames.world.Camera;
 
 public class Red extends Entity
 {
-
-	private int aFrames = 0, aIndex = 0;
-
-	private boolean go = true, back = false;
+	private boolean cycle = true, cycleBack = false;
 	public boolean damage = false;
 
-	public static int redLife = 5, curLife = 5;
+	private int animationFrames = 0, spriteIndex = 0;
+	public static int maxLife = 5, curLife = 5;
 
 	private BufferedImage[] sprites;
 
@@ -30,6 +28,8 @@ public class Red extends Entity
 		sprites[1] = Game.spritesheet.getSprite(18, 135, 14, 16);
 		sprites[2] = Game.spritesheet.getSprite(67, 135, 14, 16);
 		sprites[3] = Game.spritesheet.getSprite(85, 135, 14, 16);
+		
+		depth = 3;
 	}
 
 	public void tick()
@@ -40,72 +40,81 @@ public class Red extends Entity
 			Game.player.life--;
 			Sound.get().hit.play();
 		}
-
-		if (Player.growIt)
-		{
-			if (Game.orbsPicked > 0)
-			{
-				Game.orbsPicked--;
-			}
-		}
 	}
 
 	public boolean isCollidingWithPlayer()
 	{
-		Rectangle enemyCurrent = new Rectangle(this.getX() - curLife * 3 - 1, this.getY() - curLife * 3 - 1,
-				(10 * curLife), (10 * curLife));
-		Rectangle player = new Rectangle(Game.player.getX() - Game.player.Pmaskx,
-				Game.player.getY() - Game.player.Pmasky, Game.player.Pmaskw, Game.player.Pmaskh);
+		int width = 20 * (maxLife - curLife + 1);
+		int x = this.getX() - width / 2 + 8;
+		int y = this.getY() - width / 2 + 8;
+		
+		Rectangle enemyCurrent = new Rectangle(x, y, width, width);
+		
+		Rectangle player = new Rectangle(
+				Game.player.getX() - Game.player.maskX,
+				Game.player.getY() - Game.player.maskY - 2,
+				Game.player.maskW, 
+				Game.player.maskH
+		);
 
 		return enemyCurrent.intersects(player);
 	}
 
-	private void Animate()
+	private void animate()
 	{
-
-		aFrames++;
-		if (aFrames == 10)
+		animationFrames++;
+		if(animationFrames == 10)
 		{
-			aFrames = 0;
-			if (aIndex < 3 && go == true)
+			animationFrames = 0;
+			if(spriteIndex < 3 && cycle == true)
 			{
-				aIndex++;
-				if (aIndex == 3)
+				spriteIndex++;
+				
+				if (spriteIndex == 3)
 				{
-					go = false;
-					back = true;
+					cycle = false;
+					cycleBack = true;
 				}
-			} else if (aIndex > 0 && back == true)
+			}
+			else if (spriteIndex > 0 && cycleBack == true)
 			{
-				aIndex--;
-				if (aIndex == 0)
+				spriteIndex--;
+				
+				if (spriteIndex == 0)
 				{
-					go = true;
-					back = false;
+					cycle = true;
+					cycleBack = false;
 				}
 			}
 		}
-
 	}
 
 	public void render(Graphics g)
 	{
-		if (curLife > 0)
-		{
-			if (Game.gameState == "NORMAL" || Game.gameState == "PAUSE")
-			{
-				g.setColor(new Color(250, 0, 0, 100));
-				g.fillRoundRect(this.getX() - Camera.x - curLife * 3 - 1, this.getY() - Camera.y - curLife * 3 - 1,
-						(10 * curLife), (10 * curLife), 10, 10);
-			}
-		}
 		if (Game.curLevel == Game.MAX_LEVEL && Game.hideSprite == false 
 				&& Game.gameState != "LEVEL_SELECT_CHANGED")
 		{
-			g.drawImage(sprites[aIndex], this.getX() - Camera.x, this.getY() - Camera.y, null);
+			g.drawImage(sprites[spriteIndex], this.getX() - Camera.x, this.getY() - Camera.y, null);
+			
 			if (Game.gameState != "SCENE3")
-				Animate();
+			{ animate(); }
+		}
+		
+		if (curLife > 0 && (Game.gameState == "NORMAL" || Game.gameState == "PAUSE"))
+		{
+			int diameter = 36 * Game.bossTimer;
+			int x = this.getX() - Camera.x - diameter / 2 + 8;
+			int y = this.getY() - Camera.y - diameter / 2 + 8;
+			
+			g.setColor(new Color(250, 0, 0, 100));
+			g.fillRoundRect(x, y, diameter, diameter, diameter, diameter);
+			
+			diameter = 20 * (maxLife - curLife + 1);
+			x = this.getX() - Camera.x - diameter / 2 + 7;
+			y = this.getY() - Camera.y - diameter / 2 + 8;
+			
+			g.setColor(new Color(255, 0, 0, 190));
+			g.fillRoundRect(x, y, diameter, diameter, diameter, diameter);	
 		}
 	}
-
 }

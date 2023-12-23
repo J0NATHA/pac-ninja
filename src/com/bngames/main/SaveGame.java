@@ -1,21 +1,47 @@
 package com.bngames.main;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.Reader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+
+import com.google.gson.Gson;
 
 public abstract class SaveGame
 {
-	private static final String SAVE_FILE = "save_data.txt";
-	private static final File SAVE_DIRECTORY 
-		= new File(
+	private static final String FILE_NAME = "save_data.json";
+	private static final File SAVE_DIRECTORY = 
+			new File(
 				System.getProperty("user.home") 
 				+ File.separator + "AppData" + File.separator + "Local" + File.separator  
 				+ "pacninja" + File.separator + Game.GAME_VERSION + File.separator
-			  );
+			);
+		
+	public static SaveFile loadFile()
+	{
+		try 
+		{
+			Gson gson = new Gson();
+			Reader reader = new FileReader(SAVE_DIRECTORY.getAbsolutePath() + File.separator + FILE_NAME);
+			return gson.fromJson(reader, SaveFile.class);
+		}
+		
+		catch (Exception e) 
+		{ return new SaveFile(); }	
+	}
+	
+	private static void gsonWrite(SaveFile file) throws IOException
+	{
+		FileWriter writer = 
+				new FileWriter(SAVE_DIRECTORY.getAbsolutePath() + File.separator + FILE_NAME);
+			
+		Gson gson = new Gson();
+		gson.toJson(file, writer);
+		
+		writer.close();
+	}
 	
 	public static boolean save(String data)
 	{
@@ -24,14 +50,16 @@ public abstract class SaveGame
 			if(!SAVE_DIRECTORY.exists())
 			{ SAVE_DIRECTORY.mkdirs();}
 			
-			if(latestCompletedLevel() >= Integer.parseInt(data))
+			Integer level = Integer.parseInt(data);
+			
+			if(latestCompletedLevel() >= level)
 			{ return false; }
 			
-			FileWriter writer = 
-				new FileWriter(SAVE_DIRECTORY.getAbsolutePath() + File.separator + SAVE_FILE, true);
+			SaveFile file = loadFile();
 			
-			writer.write(data + '\n');
-			writer.close();
+			file.getCompletedLevels().add(level);
+			
+			gsonWrite(file);
 			
 			return true;
 		}
@@ -41,31 +69,60 @@ public abstract class SaveGame
 		return false;
 	}
 	
-	public static int latestCompletedLevel()
+	public static void saveDeath()
 	{
 		try
 		{
-			FileReader fileReader = 
-				new FileReader(SAVE_DIRECTORY.getAbsolutePath() + File.separator + SAVE_FILE);
+			SaveFile file = loadFile();
 			
-			BufferedReader reader = new BufferedReader(fileReader);
-			String line, retVal = "";
+			file.setDeathCount(file.getDeathCount() + 1);
 			
-			while((line = reader.readLine()) != null)
-			{
-				retVal = line.replace("\n", "");
-			}
-			
-			reader.close();
-			
-			return Integer.parseInt(retVal);
-		} 
-		catch (FileNotFoundException e)
-		{ return 0; } 
+			gsonWrite(file);
+		}
 		
-		catch (IOException e)
+		catch(IOException e)
 		{ e.printStackTrace(); }
+	}
+	
+	public static void saveBossDefeated()
+	{
+		try
+		{
+			SaveFile file = loadFile();
+			
+			file.setBossDefeatedCount(file.getBossDefeatedCount() + 1);
+			
+			gsonWrite(file);
+		}
 		
-		return 0;
+		catch(IOException e)
+		{ e.printStackTrace(); }
+	}
+	
+	public static void saveLastPlayedLevel(int level)
+	{
+		try
+		{
+			SaveFile file = loadFile();
+			
+			file.setLastPlayedLevel(level);
+			
+			gsonWrite(file);
+		}
+		
+		catch(IOException e)
+		{ e.printStackTrace(); }
+	}
+	
+	public static int latestCompletedLevel()
+	{
+		SaveFile file = loadFile();
+		
+		if(file == null || file.getCompletedLevels().isEmpty())
+		{ return 0; }
+		
+		ArrayList<Integer> completedLevels = file.getCompletedLevels();
+		
+		return completedLevels.get(completedLevels.size() - 1);
 	}
 }

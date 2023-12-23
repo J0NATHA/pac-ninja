@@ -16,10 +16,11 @@ import com.bngames.world.World;
 public class Entity
 {
 
-	public static final BufferedImage TREE_SPRITE = Game.spritesheet.getSprite(67, 3, 8, 8);
+	public static final BufferedImage ORB_SPRITE = Game.spritesheet.getSprite(67, 3, 8, 8);
+	public static final BufferedImage ORB_HUD = Game.spritesheet.getSprite(36, 20, 8, 8);
 	public static final BufferedImage ENEMY_EN = Game.spritesheet.getSprite(67, 3, 8, 8);
 	public static final BufferedImage ENEMY_ENEMY = Game.spritesheet.getSprite(67, 3, 8, 8);
-	public static final BufferedImage SUPER_HEALTH = Game.spritesheet.getSprite(146, 141, 10, 10);
+	public static final BufferedImage SUPER_HEALTH = Game.spritesheet.getSprite(148, 102, 10, 11);
 
 	public double x;
 	public double y;

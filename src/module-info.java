@@ -6,4 +6,7 @@ module info
 	exports com.bngames.world;
 
 	requires transitive java.desktop;
+	requires com.google.gson;
+	
+	opens com.bngames.main;
 }

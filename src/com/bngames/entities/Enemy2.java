@@ -27,7 +27,6 @@ public class Enemy2 extends Entity
 		sprites[0] = Game.spritesheet.getSprite(1, 114, 15, 15);
 		sprites[1] = Game.spritesheet.getSprite(20, 114, 15, 15);
 		sprites[2] = Game.spritesheet.getSprite(37, 114, 15, 15);
-
 	}
 
 	void chaseStart()
@@ -84,8 +83,8 @@ public class Enemy2 extends Entity
 	public boolean isCollidingWithPlayer()
 	{
 		Rectangle enemyCurrent = new Rectangle(this.getX() + maskx, this.getY() + masky, maskw, maskh);
-		Rectangle player = new Rectangle(Game.player.getX() - Game.player.Pmaskx,
-				Game.player.getY() - Game.player.Pmasky, Game.player.Pmaskw, Game.player.Pmaskh);
+		Rectangle player = new Rectangle(Game.player.getX() - Game.player.maskX,
+				Game.player.getY() - Game.player.maskY, Game.player.maskW, Game.player.maskH);
 
 		return enemyCurrent.intersects(player);
 	}

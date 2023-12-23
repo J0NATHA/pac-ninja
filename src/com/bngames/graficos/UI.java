@@ -7,6 +7,7 @@ import java.awt.image.BufferedImage;
 
 import javax.imageio.ImageIO;
 
+import com.bngames.entities.Entity;
 import com.bngames.entities.Player;
 import com.bngames.entities.Red;
 import com.bngames.main.Game;
@@ -15,23 +16,47 @@ import com.bngames.world.Camera;
 
 public class UI
 {
-	public int opacity = Game.bossTimer * 10;
-	public final BufferedImage orb = (Game.spritesheet.getSprite(67, 3, 8, 8));
-	private int frames = 0;
+	private int framesSplashScreen = 0;
 
 	public void render(Graphics g)
 	{
+		int y = 44;
+		
 		if (Game.curLevel != Game.MAX_LEVEL)
 		{
-			g.setColor(Color.white);
-			g.setFont(new Font("consolas", Font.BOLD, 16));
-			g.drawString(Game.orbAtual + " / " + Game.orbContagem, 360, 28);
+			double distance = Math.sqrt(
+					       	Math.pow(16 - Game.player.getX(), 2) +
+					       	Math.pow(16 - Game.player.getY(), 2) );
+			
+			
+			int alpha = distance < 30 ? 100 : 255;
+			
+			double completionPercentage = (double) Game.orbAtual / Game.orbContagem;
+			int arcAngle = - (int)(completionPercentage * 360);
+			
+			g.setColor(new Color(0, 0, 0, 150));
+			g.fillArc(10, 10, 100, 100, 90, 360);
+			
+			g.setColor(new Color(0, 255, 0, alpha));
+			g.fillArc(10, 10, 100, 100, 90, arcAngle);
+			
+			g.setColor(Color.orange);
+			g.drawArc(10, 10, 100, 100, 0, 360);
 		}
 		
-		g.setColor(Color.green);
-		g.fillRoundRect(158, 685, Game.orbsPicked * 20, 24, 3, 3);
-		g.setColor(Color.orange);
-		g.drawRoundRect(157, 684, (10 * 40) + 1, 25, 5, 4);
+		else
+		{ y = 30; }
+				
+		g.drawImage(Entity.ORB_HUD, 44, y, 32, 32, null);
+
+		double imagePercentage = (double)Game.orbsPicked / 20;
+		int height = (int)(imagePercentage * 8);
+		
+		if(height > 0)
+		{
+			final BufferedImage ORB_SPRITE = Game.spritesheet.getSprite(67, 3, 8, height);
+			g.drawImage(ORB_SPRITE, 44, y, 32, 4 * height, null);
+		}
 	}
 	
 	public boolean animateLevelIntro(Graphics g, int frame)
@@ -56,6 +81,12 @@ public class UI
 		g.setColor(new Color(0, 250, 0, 150));
 		g.fillOval(Game.player.getX() - Camera.x, Game.player.getY() - Camera.y - 4, 16, 23);
 		
+		if(Game.player.hasSuperHealth())
+		{ 
+			g.setColor(new Color(255, 255, 0, 150));
+			g.fillOval(Game.player.getX() - Camera.x - 2, Game.player.getY() - Camera.y - 6, 20, 28);
+		}
+		
 		return frame == secondsToFrames(.7);
 	}
 	
@@ -67,45 +98,45 @@ public class UI
 	public int animateSpaceBar(Graphics g, int space, BufferedImage[] spacebar)
 	{
 		int SCALE = Game.SCALE;
+		int index = 0;
 
 		space++;
 		
-		if (space <= 10)
-		{ g.drawImage(spacebar[0], 101 * SCALE, (230 * SCALE) - 4, 33 * SCALE, 7 * SCALE, null); } 
+		if(space > 25)
+		{ index = 1; }
 		
-		else if (space < 22)
-		{ g.drawImage(spacebar[1], 101 * SCALE, (230 * SCALE) - 4, 33 * SCALE, 7 * SCALE, null); }
-		
-		else
+		if(space >= 40)
 		{ space = 0; }
 		
+		final int x = (Game.player.getX() - Camera.x - 9) * SCALE;
+		final int y = (Game.player.getY() - Camera.y + 18) * SCALE;
+		final int w = 33 * SCALE;
+		final int h = 7 * SCALE;
+		
+		g.drawImage(spacebar[index], x, y, w, h, null);
+		
 		return space;
 	}
 	
-	public int animateSpaceBar(Graphics g, int space, BufferedImage[] spacebar, int x, int y, int scale)
+	public int animateSpaceBar(Graphics g, int space, BufferedImage[] spacebar, int x, int y, double scale)
 	{
-		int SCALE = Game.SCALE + scale;
-
+		final double SCALE = Game.SCALE + scale;
+		int index = 0;
+		
 		space++;
 		
-		if (space < 15)
-		{ g.drawImage(spacebar[0], x, y, 33 * SCALE, 7 * SCALE, null); } 
+		if(space >= 15)
+		{ index = 1; }
 		
-		else if (space < 60)
-		{ g.drawImage(spacebar[1], x, y, 33 * SCALE, 7 * SCALE, null); }
+		if(space >= 60)
+		{ space = 0; }
 		
-		else
-		{ 
-			g.drawImage(spacebar[1], x, y, 33 * SCALE, 7 * SCALE, null);
-			space = 0;
-		}
+		final int w = (int)(33 * SCALE);
+		final int h = (int)(7 * SCALE);
+		
+		g.drawImage(spacebar[index], x, y, w, h, null);
 		
 		return space;
-	}
-	
-	public void renderOrb(Graphics g)
-	{
-		g.drawImage(orb, 107, 3, null);
 	}
 
 	public void renderBoss(Graphics g)
@@ -113,28 +144,14 @@ public class UI
 		if (Game.curLevel == Game.MAX_LEVEL)
 		{
 			g.setColor(Color.black);
-			g.drawRoundRect(44, 9, Red.redLife * 30 + 1, 10, 2, 2);
+			g.drawRoundRect(44, 9, Red.maxLife * 30 + 1, 10, 2, 2);
 			g.setColor(Color.red);
 			
-			if (Player.growIt)
+			if (Player.crushOrb)
 			{ g.setColor(Color.green); }
 			
 			g.fillRoundRect(45, 10, Red.curLife * 30, 9, 1, 1);
 			g.setColor(Color.black);
-
-			g.setColor(new Color(250, 0, 0, Game.bossTimer * 10));
-			g.fillRect(0, 0, Game.WIDTH, Game.HEIGHT);
-		}
-	}
-
-	public void drawBossAtk(Graphics g)
-	{
-		if (Game.curLevel == Game.MAX_LEVEL && Game.gameState == "NORMAL")
-		{
-			g.setColor(new Color(200, 10, 40));
-			g.fillRoundRect(158, 645, Game.bossTimer * 20, 24, 3, 3);
-			g.setColor(Color.orange);
-			g.drawRoundRect(157, 644, (10 * 40) + 1, 25, 5, 4);
 		}
 	}
 
@@ -200,23 +217,23 @@ public class UI
 	
 	public boolean drawSplashScreen(Graphics g)
 	{
-		++frames;
+		++framesSplashScreen;
 		
 		g.setColor(new Color(200, 200, 200));
 		g.fillRect(0, 0, Game.WIDTH * Game.SCALE, Game.HEIGHT * Game.SCALE);
 		drawLogo(g);
 	
-		if(frames < secondsToFrames(1.8))
-		{ fadeBlack(g, frames, 1.8, false); }
+		if(framesSplashScreen < secondsToFrames(1.8))
+		{ fadeBlack(g, framesSplashScreen, 1.8, false); }
 		
-		if(frames >= secondsToFrames(3))
+		if(framesSplashScreen >= secondsToFrames(3))
 		{
 
-			boolean done = fadeBlack(g, frames, 3, true);
+			boolean done = fadeBlack(g, framesSplashScreen, 3, true);
 			
 			if(done)
 			{
-				frames = 0;
+				framesSplashScreen = 0;
 				return true;
 			}
 		}
@@ -248,6 +265,14 @@ public class UI
 		return false;
 	}
 	
+	public void fadeToRed(Graphics g, int frame)
+	{
+		final double alphaPerFrame = 255.0 / 60;
+		
+		g.setColor(new Color(255, 0, 0, (int)(alphaPerFrame * frame)));
+		g.fillRect(0, 0, Game.WIDTH * Game.SCALE, Game.HEIGHT * Game.SCALE);
+	}
+	
 	private void drawLogo(Graphics g)
 	{
 		try
@@ -257,7 +282,7 @@ public class UI
 			if(Game.curLevel == Game.MAX_LEVEL)
 			{ path = "/LogoRN.png"; }
 			
-			if(Game.completed)
+			if(Game.finished)
 			{ path = "/LogoCompleted.png"; }
 			
 			final BufferedImage logo = ImageIO.read(getClass().getResource(path));
