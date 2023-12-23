@@ -11,6 +11,7 @@ import java.util.Random;
 
 import com.bngames.graficos.UI;
 import com.bngames.main.Game;
+import com.bngames.main.SaveGame;
 import com.bngames.main.Sound;
 import com.bngames.world.Camera;
 import com.bngames.world.World;
@@ -19,16 +20,16 @@ public class Player extends Entity
 {
 	public UI ui;
 
-	public int Pmaskx = -3, Pmasky, Pmaskh = 16, Pmaskw = 10, blackoutFrames, frames, 
+	public int  maskX = -3, maskY, maskH = 16, maskW = 10, blackoutFrames, frames, 
 				index, maxIndex = 4, maxFrames = 10, currentDirection, lastDirection, 
-				orbFrames, orbIndex, orbMax = 3, invFrames, rectTime, rectMax = 25,
+				orbFrames, orbIndex, orbMax = 3, invFrames, crushTime, maxCrushTime = 35,
 				life = 2, soundFrames;
 	
-	public static boolean growIt, superHealth;
+	public static boolean crushOrb, superHealth;
 	
-	public boolean right, up, left, down, changedDir, isDamaged, hitOnce, sneak;
+	public boolean right, up, left, down, changedDir, isDamaged, hitWall, sneak;
 	
-	public BufferedImage[] upDir, downDir, leftDir, rightDir, orbX, wallHold;
+	public BufferedImage[] upDir, downDir, leftDir, rightDir, orbCrush, wallHold;
 
 	public Player(int x, int y, int width, int height, int speed, BufferedImage sprite)
 	{
@@ -64,10 +65,10 @@ public class Player extends Entity
 		rightDir[2] = Game.spritesheet.getSprite(96, 96, 14, 16);
 		rightDir[3] = Game.spritesheet.getSprite(112, 96, 14, 16);
 
-		orbX = new BufferedImage[3];
-		orbX[0] = Game.spritesheet.getSprite(55, 15, 16, 16);
-		orbX[1] = Game.spritesheet.getSprite(70, 15, 16, 16);
-		orbX[2] = Game.spritesheet.getSprite(85, 15, 16, 16);
+		orbCrush = new BufferedImage[3];
+		orbCrush[0] = Game.spritesheet.getSprite(55, 15, 16, 16);
+		orbCrush[1] = Game.spritesheet.getSprite(70, 15, 16, 16);
+		orbCrush[2] = Game.spritesheet.getSprite(85, 15, 16, 16);
 		
 		ui = new UI();
 	}
@@ -102,7 +103,10 @@ public class Player extends Entity
 			{ speed = 1; }
 		}
 		
-		if (!growIt)
+		if (crushOrb && Game.orbsPicked > 0)
+		{ Game.orbsPicked--; }
+		
+		if (!crushOrb)
 		{
 			if (right)
 			{
@@ -187,14 +191,15 @@ public class Player extends Entity
 		if (life <= 0)
 		{
 			life = 0;
-			Game.fadeOut = true;
+			Game.fadeToBlack = true;
 			Game.gameState = "GAME_OVER";
+			SaveGame.saveDeath();
 		}
 	}
 	
 	private void fitIn(int dir)
 	{
-		final double MOVE_RATE = .1;
+		final double MOVE_RATE = .125;
 		
 		// Prioritize closest diagonal
 		dir = checkDiagonals(currentDirection);
@@ -300,44 +305,39 @@ public class Player extends Entity
 
 	public void getOrb()
 	{
-		for (int i = 0; i < Game.entities.size(); i++)
+		for(int i = 0; i < Game.entities.size(); ++i)
 		{
-			Entity current = Game.entities.get(i);
-			if (current instanceof Tree)
-			{
-				if (Entity.isColliding(this, current))
-				{
-					Game.entities.remove(i);
-					Game.orbAtual++;
-					
-					Sound.get().pickup.play();
-					Sound.get().pickup.setVolume(1f);
-					
-					if(Game.orbsPicked == 20)
-					{ return; }
-					
-					// Game.orbsPicked < 20
-					
-					Game.orbsPicked++;
-					
-					if (Game.curLevel == Game.MAX_LEVEL)
-					{
-						if (new Random().nextInt(100) < 35)
-						{
-							if (Game.bossTimer > 1)
-							{
-								Game.bossTimer -= 2;
-							}
-						}
-					}
-				}
-			}
+			Entity entity = Game.entities.get(i);
 			
-			else if(current instanceof SuperHealth && Entity.isColliding(this, current))
+			if(!Entity.isColliding(this, entity))
+			{ continue; }
+			
+			if(entity instanceof Orb)
 			{
+				
+				Game.orbAtual++;
+				Sound.get().pickup.play();
+				World.generatePickupParticle(4, entity.getX() + 4, entity.getY() + 4);
+				Game.entities.remove(entity);
+				
+				if(Game.orbsPicked == 20)
+				{ continue; }
+				
+				// Game.orbsPicked < 20
+				Game.orbsPicked++;
+				
+				// In the final level, there's a 35% chance of reducing the
+				// boss timer by 2 upon picking up an orb
+				if (Game.curLevel == Game.MAX_LEVEL && 
+					new Random().nextInt(100) < 35 &&
+					Game.bossTimer > 1)
+				{ Game.bossTimer -= 2; }
+			}	
+			else if(entity instanceof SuperHealth && Entity.isColliding(this, entity))
+			{
+				Game.entities.remove(entity);
 				superHealth = true;
 				Sound.get().pickupSuperHealth.play();
-				Game.entities.remove(i);
 			}
 		}
 	}
@@ -359,11 +359,11 @@ public class Player extends Entity
 
 	public void hitWall()
 	{
-		if (hitOnce)
+		if (hitWall)
 		{
 			Sound.get().hitwall.play();
 			
-			hitOnce = false;
+			hitWall = false;
 		}
 	}
 
@@ -380,14 +380,14 @@ public class Player extends Entity
 		{ orbIndex++; }
 		
 		else
-		{ World.generateParticle(5, (int) x + 10, (int) y + 10); }
+		{ World.generateParticle(200, getX() + 8, getY() + 8); }
 	}
 
 	private void drawSuperHealth(Graphics g)
 	{
 		g.setColor(new Color(255, 255, 0, 150));
-		g.fillOval(Game.player.getX() - Camera.x - Game.player.Pmaskx - 4,
-				Game.player.getY() - Camera.y - 3 - Game.player.Pmasky, Game.player.Pmaskw + 6, Game.player.Pmaskh + 4);
+		g.fillOval(Game.player.getX() - Camera.x - Game.player.maskX - 4,
+				Game.player.getY() - Camera.y - 3 - Game.player.maskY, Game.player.maskW + 6, Game.player.maskH + 4);
 	}
 
 	public void render(Graphics g)
@@ -400,7 +400,7 @@ public class Player extends Entity
 			
 			if (states.contains(Game.gameState))
 			{
-				if (!growIt)
+				if (!crushOrb)
 				{
 					if (currentDirection == 0)
 					{ g.drawImage(downDir[0], this.getX() - Camera.x, this.getY() - Camera.y, null); }
@@ -409,7 +409,7 @@ public class Player extends Entity
 					{
 						if (World.isFree((int) (x + speed), getY()))
 						{
-							hitOnce = true;
+							hitWall = true;
 							animate();
 							g.drawImage(rightDir[index], this.getX() - Camera.x, this.getY() - Camera.y, null);
 						} 
@@ -425,7 +425,7 @@ public class Player extends Entity
 					{
 						if (World.isFree((int) (x - speed), getY()))
 						{
-							hitOnce = true;
+							hitWall = true;
 							animate();
 							g.drawImage(leftDir[index], this.getX() - Camera.x, this.getY() - Camera.y, null);
 
@@ -442,7 +442,7 @@ public class Player extends Entity
 					{
 						if (World.isFree(getX(), (int) (y - speed)))
 						{
-							hitOnce = true;
+							hitWall = true;
 							animate();
 							g.drawImage(upDir[index], this.getX() - Camera.x, this.getY() - Camera.y, null);
 
@@ -459,7 +459,7 @@ public class Player extends Entity
 					{
 						if (World.isFree(getX(), (int) (y + speed)))
 						{
-							hitOnce = true;
+							hitWall = true;
 							animate();
 							g.drawImage(downDir[index], this.getX() - Camera.x, this.getY() - Camera.y, null);
 							animate();
@@ -472,97 +472,78 @@ public class Player extends Entity
 						}
 					}
 				} 
-				
-				// growIt == true
-				else
+				else // growIt == true
 				{
-					g.drawImage(orbX[orbIndex], this.getX() - Camera.x, this.getY() - Camera.y, null);
+					g.drawImage(orbCrush[orbIndex], this.getX() - Camera.x, this.getY() - Camera.y, null);
 					animateOrb();
 				}
 
 				if (hasSuperHealth())
 				{ drawSuperHealth(g); }
 
-				if (growIt)
+				if (crushOrb)
 				{
-					rectTime++;
+					crushTime++;
 					
-					if (rectTime > 15)
+					if (crushTime <= maxCrushTime)
 					{
-						if (rectTime <= rectMax)
-						{
-							Graphics2D g2 = (Graphics2D) g;
-							blackoutFrames++;
-							
-							if (blackoutFrames > 0 && blackoutFrames < 5)
-							{
-								Sound.get().growIt.play();
-								g2.setColor(new Color(0, 250, 0, 50));
-								g2.fillRect(0, 0, Game.WIDTH, Game.HEIGHT);
-							} 
-							
-							else if (blackoutFrames >= 5 && blackoutFrames < 10)
-							{
-								g2.setColor(new Color(0, 250, 0, 100));
-								g2.fillRect(0, 0, Game.WIDTH, Game.HEIGHT);
-							} 
-							
-							else if (blackoutFrames >= 10 && blackoutFrames < 15)
-							{
-								g2.setColor(new Color(0, 250, 0, 200));
-								g2.fillRect(0, 0, Game.WIDTH, Game.HEIGHT);
-							} 
-							
-							else if (blackoutFrames >= 15)
-							{
-								g2.setColor(new Color(0, 250, 0));
-								g2.fillRect(0, 0, Game.WIDTH, Game.HEIGHT);
-							}
-						} 
+						Graphics2D g2 = (Graphics2D) g;
 						
-						else
+						blackoutFrames++;
+						
+						if(blackoutFrames == 20)
+						{ Sound.get().growIt.play(); }
+						
+						double completionPercentage = blackoutFrames / 20.0;
+						
+						if(completionPercentage > 1.0) 
+						{ completionPercentage = 1.0; }
+						
+						final int diameter = (int)(Math.pow(Game.WIDTH * 2.5, completionPercentage));
+						final int alpha = (int)(180 * completionPercentage);
+					
+						g2.setColor(new Color(0, 255, 0, alpha));
+						
+						g2.fillOval(
+								getX() - Camera.x - diameter / 2 + 8,
+								getY() - Camera.y - diameter / 2 + 8, 
+								diameter, diameter);
+					} 
+					else
+					{
+						if (Game.curLevel == Game.MAX_LEVEL)
 						{
-							if (Game.curLevel == Game.MAX_LEVEL)
+							if (Red.curLife > 1)
+							{ Game.randomize = true; }
+
+							if (Red.curLife > 0)
 							{
-								if (Red.curLife > 1)
-								{
-									Game.randomize = true;
-								}
-
-								if (Red.curLife == 1)
-								{
-									superHealth = true;
-								}
-
-								if (Red.curLife > 0)
-								{
-									Sound.get().bossound3.play();
-									World.generateParticle2(200, Camera.x + 10 + (Red.curLife * 30), Camera.y + 15);
-									Red.curLife--;
-								}
+								Sound.get().bossound3.play();
+								World.generateParticleBossHealth(800, Camera.x + 10 + (Red.curLife * 30), Camera.y + 15);
+								Red.curLife--;
 							}
-
-							blackoutFrames = 0;
-							growIt = false;
-							
-							if (life == 1)
-							{ life++; }
-							
-							orbIndex = 0;
-							rectTime = 0;
-							Game.orbsPicked = 0;
 						}
+
+						blackoutFrames = 0;
+						crushOrb = false;
+						
+						if (life == 1)
+						{ life++; }
+						
+						orbIndex = 0;
+						crushTime = 0;
+						Game.orbsPicked = 0;
 					}
 				}
-				if (isDamaged)
+				if (isDamaged && life > 0)
 				{
-					if (life == 1)
-					{
-						g.setColor(new Color(0, 255, 0, 100));
-						g.fillOval(Game.player.getX() - Camera.x - Game.player.Pmaskx - 4,
-								Game.player.getY() - Camera.y - 3 - Game.player.Pmasky, Game.player.Pmaskw + 6,
-								Game.player.Pmaskh + 4);
-					}
+					g.setColor(new Color(0, 255, 0, 150));
+					g.fillOval(
+							Game.player.getX() - Camera.x - Game.player.maskX - 4,
+							Game.player.getY() - Camera.y - 3 - Game.player.maskY, 
+							Game.player.maskW + 6,
+							Game.player.maskH + 4
+					);
 				}
 
 				if (life == 1 && Game.curLevel != Game.MAX_LEVEL)
@@ -576,8 +557,8 @@ public class Player extends Entity
 
 		if (life == 0)
 		{
-			g.drawImage(Game.spritesheet.getSprite(22, 16, 8, 16), this.getX() - Camera.x, this.getY() - Camera.y,
-					null);
+			g.drawImage(Game.spritesheet.getSprite(22, 16, 8, 16), this.getX() - Camera.x, 
+						this.getY() - Camera.y, null);
 		}
 
 		if (Game.gameState == "SCENE3" && Game.sceneFrames < 248)

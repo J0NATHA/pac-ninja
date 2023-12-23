@@ -55,12 +55,6 @@ public class Sound
 			}
 		}
 		
-		
-		public void setVolume(float volume)
-		{
-
-		}
-		
 		public synchronized void play()
 		{
 			if (clips == null)

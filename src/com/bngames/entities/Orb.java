@@ -7,14 +7,14 @@ import java.util.Random;
 import com.bngames.main.Game;
 import com.bngames.world.Camera;
 
-public class Tree extends Entity
+public class Orb extends Entity
 {
 
 	private BufferedImage[] orb;
 	private int frames = 0, index = 0, maxIndex = 5;
 	private boolean shine = false;
 
-	public Tree(double x, double y, int width, int height, double speed, BufferedImage sprite)
+	public Orb(double x, double y, int width, int height, double speed, BufferedImage sprite)
 	{
 		super(x, y, width, height, speed, sprite);
 		depth = 0;

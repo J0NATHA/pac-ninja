@@ -68,7 +68,7 @@ public class Enemy extends Entity
 		if (ghostMode == false)
 			chaseStart();
 
-		if (Player.growIt)
+		if (Player.crushOrb)
 		{
 			startGhost = true;
 			if (Game.orbsPicked > 0)
@@ -132,8 +132,8 @@ public class Enemy extends Entity
 	public boolean isCollidingWithPlayer()
 	{
 		Rectangle enemyCurrent = new Rectangle(this.getX() + 2, this.getY(), 12, 17);
-		Rectangle player = new Rectangle(Game.player.getX() - Game.player.Pmaskx,
-				Game.player.getY() - Game.player.Pmasky, Game.player.Pmaskw, Game.player.Pmaskh);
+		Rectangle player = new Rectangle(Game.player.getX() - Game.player.maskX,
+				Game.player.getY() - Game.player.maskY, Game.player.maskW, Game.player.maskH);
 		
 		return enemyCurrent.intersects(player);
 	}

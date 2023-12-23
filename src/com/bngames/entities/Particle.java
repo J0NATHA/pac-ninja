@@ -10,10 +10,10 @@ import com.bngames.world.Camera;
 
 public class Particle extends Entity
 {
-	public int lifeTime = 10;
+	public int lifeTime = 120;
 	public int curLife = 0;
 
-	public int spd = 2;
+	public int spd;
 	public double dx = 0;
 	public double dy = 0;
 
@@ -21,14 +21,18 @@ public class Particle extends Entity
 	{
 		super(x, y, width, height, speed, sprite);
 
+		spd = speed;
+		
 		dx = new Random().nextGaussian();
 		dy = new Random().nextGaussian();
 	}
 
 	public void tick()
 	{
-		x += dx * spd * 2;
-		y += dy * spd * 2;
+		speed = spd * (1 - (double)curLife / lifeTime);
+		
+		x += dx * speed;
+		y += dy * speed;
 		curLife++;
 		if (lifeTime == curLife)
 		{
@@ -40,7 +44,7 @@ public class Particle extends Entity
 	{
 		g.setColor(Color.green);
 		g.fillRect(this.getX() - Camera.x - 1, this.getY() - Camera.y - 1, width + 2, height + 2);
-		;
+		
 		g.setColor(Color.black);
 		g.fillRect(this.getX() - Camera.x, this.getY() - Camera.y, width, height);
 

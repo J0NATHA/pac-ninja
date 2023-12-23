@@ -12,27 +12,27 @@ import com.bngames.entities.Enemy;
 import com.bngames.entities.Enemy2;
 import com.bngames.entities.Entity;
 import com.bngames.entities.Particle;
-import com.bngames.entities.Particle2;
+import com.bngames.entities.ParticleBossHealth;
+import com.bngames.entities.ParticlePickup;
 import com.bngames.entities.Player;
 import com.bngames.entities.Red;
 import com.bngames.entities.SuperHealth;
-import com.bngames.entities.Tree;
+import com.bngames.entities.Orb;
 import com.bngames.graficos.Spritesheet;
 import com.bngames.main.Game;
+import com.bngames.main.SaveGame;
 
 public class World
 {
-
 	public static Tile[] tiles;
 	public static int WIDTH, HEIGHT;
 	public static final int TILE_SIZE = 16;
+	private static ArrayList<Orb> orbsBoss = new ArrayList<Orb>();
 
 	public World(int level)
 	{
-
 		try
 		{
-			
 			BufferedImage map = null;
 			
 			if(level > Game.MAX_LEVEL)
@@ -132,17 +132,18 @@ public class World
 //						orb
 						if (Game.curLevel != Game.MAX_LEVEL)
 						{
-							Tree tree = new Tree((xx * 16) + 3, (yy * 16) + 3, 8, 8, 0, Entity.TREE_SPRITE);
-							Game.entities.add(tree);
+							Orb orb = new Orb((xx * 16) + 3, (yy * 16) + 3, 8, 8, 0, Entity.ORB_SPRITE);
+							Game.entities.add(orb);
 							Game.orbContagem++;
-						} else if (Game.curLevel == Game.MAX_LEVEL && Game.orbContagem < 20 && (new Random().nextInt(100) < 50))
+						} 
+						else if (Game.curLevel == Game.MAX_LEVEL) //&& Game.orbContagem < 20 && (new Random().nextInt(100) < 10))
 						{
-							Tree tree = new Tree((xx * 16) + 3, (yy * 16) + 3, 8, 8, 0, Entity.TREE_SPRITE);
-							Game.entities.add(tree);
-							Game.orbContagem++;
+							Orb orb = new Orb((xx * 16) + 3, (yy * 16) + 3, 8, 8, 0, Entity.ORB_SPRITE);
+							orbsBoss.add(orb);
 						}
 
-					} else if (pixelAtual == 0xFFCB0002)
+					} 
+					else if (pixelAtual == 0xFFCB0002)
 					{
 //						Inimigo
 						if (Game.curLevel != Game.MAX_LEVEL)
@@ -223,7 +224,26 @@ public class World
 					}
 				}
 			}
-		} catch (Exception e)
+			
+			if(Game.curLevel == Game.MAX_LEVEL)
+			{
+				while(Game.orbContagem < 20)
+				{
+					for(Orb orb : orbsBoss)
+					{
+						if(new Random().nextInt(100) < 90)
+						{ continue; }
+						
+						Game.entities.add(orb);
+						Game.orbContagem++;
+						
+						if(Game.orbContagem == 20)
+						{ break; }
+					}
+				}
+			}
+		} 
+		catch (Exception e)
 		{
 			e.printStackTrace();
 		}
@@ -234,17 +254,24 @@ public class World
 	{
 		for (int i = 0; i < amount; i++)
 		{
-			Game.entities.add(new Particle(x, y, 1, 1, 2, null));
+			Game.entities.add(new Particle(x, y, 1, 1, 4, null));
 		}
 	}
-
-	public static void generateParticle2(int amount, int x, int y)
+	
+	public static void generatePickupParticle(int amount, int x, int y)
 	{
 		for (int i = 0; i < amount; i++)
 		{
-			Game.entities.add(new Particle2(x, y, 1, 1, 1, null));
+			Game.entities.add(new ParticlePickup(x, y, 2, 2, 1, null));
 		}
+	}
 
+	public static void generateParticleBossHealth(int amount, int x, int y)
+	{
+		for (int i = 0; i < amount; i++)
+		{
+			Game.entities.add(new ParticleBossHealth(x, y, 3, 3, 1, null));
+		}
 	}
 
 	public static boolean isFree(int xnext, int ynext)
@@ -269,6 +296,8 @@ public class World
 
 	public static void restartGame(int level)
 	{
+		SaveGame.saveLastPlayedLevel(level);
+		
 		Game.orbAtual = 0;
 		Game.orbContagem = 0;
 		Game.orbsPicked = 0;
