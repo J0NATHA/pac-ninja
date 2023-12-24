@@ -25,6 +25,8 @@ public class Particle extends Entity
 		
 		dx = new Random().nextGaussian();
 		dy = new Random().nextGaussian();
+		
+		depth = 2;
 	}
 
 	public void tick()

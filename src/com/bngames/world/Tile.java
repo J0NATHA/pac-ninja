@@ -8,16 +8,16 @@ import com.bngames.main.Game;
 public class Tile
 {
 
-	public static BufferedImage Tile_FLOOR = Game.spritesheet.getSprite(0, 0, 16, 16);
-	public static BufferedImage Tile_WALL = Game.spritesheet.getSprite(16, 0, 16, 16);
+	public static BufferedImage TILE_FLOOR = Game.spritesheet.getSprite(0, 0, 16, 16);
+	public static BufferedImage TILE_WALL = Game.spritesheet.getSprite(16, 0, 16, 16);
 	
-	public static BufferedImage[] Tile_WALL2 =
+	public static BufferedImage[] TILE_WALL2 =
 	{ 
 		Game.spritesheet.getSprite(0, 96, 16, 16), 
 		Game.spritesheet.getSprite(16, 96, 16, 16) 
 	};
 	
-	public static BufferedImage[] Tile_CAVE =
+	public static BufferedImage[] TILE_FLOOR2 =
 	{ 
 		Game.spritesheet.getSprite(0, 80, 16, 16), 
 		Game.spritesheet.getSprite(16, 80, 16, 16) 

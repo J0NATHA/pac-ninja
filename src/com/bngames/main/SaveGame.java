@@ -43,7 +43,7 @@ public abstract class SaveGame
 		writer.close();
 	}
 	
-	public static boolean save(String data)
+	public static boolean saveLevel(String data)
 	{
 		try
 		{

@@ -39,6 +39,9 @@ public class ParticleBossHealth extends Entity
 
 	public void render(Graphics g)
 	{
+		if(Game.gameState.equals("TRANSITION2"))
+		{ return; }
+		
 		g.setColor(Color.red);
 		g.fillRect(this.getX() - Camera.x - 1, this.getY() - Camera.y - 1, width + 2, height + 2);
 		

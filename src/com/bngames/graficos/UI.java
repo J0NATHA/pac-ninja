@@ -1,8 +1,10 @@
 package com.bngames.graficos;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
 import javax.imageio.ImageIO;
@@ -12,6 +14,7 @@ import com.bngames.entities.Player;
 import com.bngames.entities.Red;
 import com.bngames.main.Game;
 import com.bngames.main.SaveGame;
+import com.bngames.main.Sound;
 import com.bngames.world.Camera;
 
 public class UI
@@ -20,16 +23,18 @@ public class UI
 
 	public void render(Graphics g)
 	{
+		Graphics2D g2 = (Graphics2D) g;
 		int y = 44;
 		
 		if (Game.curLevel != Game.MAX_LEVEL)
 		{
 			double distance = Math.sqrt(
-					       	Math.pow(16 - Game.player.getX(), 2) +
-					       	Math.pow(16 - Game.player.getY(), 2) );
-			
+						       	  Math.pow(16 - Game.player.getX(), 2) +
+						       	  Math.pow(16 - Game.player.getY(), 2) 
+					       	  );
 			
 			int alpha = distance < 30 ? 100 : 255;
+			g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float)alpha / 255));
 			
 			double completionPercentage = (double) Game.orbAtual / Game.orbContagem;
 			int arcAngle = - (int)(completionPercentage * 360);
@@ -47,7 +52,7 @@ public class UI
 		else
 		{ y = 30; }
 				
-		g.drawImage(Entity.ORB_HUD, 44, y, 32, 32, null);
+		g2.drawImage(Entity.ORB_HUD, 44, y, 32, 32, null);
 
 		double imagePercentage = (double)Game.orbsPicked / 20;
 		int height = (int)(imagePercentage * 8);
@@ -74,6 +79,25 @@ public class UI
 		}
 		
 		return y == Game.player.getYTile();
+	}
+	
+	public void animateLevelOutro(Graphics g, int frame)
+	{		
+		int y = Game.player.getY() - frame * 4 - Camera.y;
+		int x = Game.player.getX() - Camera.x;
+		
+		if(frame == 1)
+		{ Sound.get().start.play(); }
+		
+		g.setColor(new Color(0, 250, 0, 150));
+		
+		g.fillOval(x, y - 4, 16, 23);
+		
+		if(Game.player.hasSuperHealth())
+		{ 
+			g.setColor(new Color(255, 255, 0, 150));
+			g.fillOval(x - 2, y - 6, 20, 28);
+		}
 	}
 	
 	public boolean waitLevelIntro(Graphics g, int frame)
@@ -157,12 +181,62 @@ public class UI
 
 	public void drawLevelSelectMenu(Graphics g, int level)
 	{
+		int bossKillCount = SaveGame.loadFile().getBossDefeatedCount();
+		int deathCount = SaveGame.loadFile().getDeathCount();
+		int rectWidth = bossKillCount > 0 ? 145 : 300;
+		g.setFont(new Font("consolas", Font.BOLD, 28));
+		
+		g.setColor(Color.GRAY);
+		g.fillRect(265, 150, 50, 50);
+		
+		g.setColor(Color.BLACK);
+		g.fillRect(275, 160, 30, 30);
+		
+		if(Game.finished)
+		{			
+			g.setColor(Color.white);
+			g.fillRect(210, 150, 50, 50);
+			g.setColor(Color.black);
+			g.fillRect(212, 152, 46, 46);
+			g.setColor(Color.white);
+			g.drawString("E", 226, 184);
+			
+			g.drawImage(Game.spritesheet.getSprite(148, 146, 10, 11), 320, 155, 40, 44, null);
+			
+			if(Game.superHealthNextLevel)
+			{ g.drawImage(Game.spritesheet.getSprite(144, 85, 16, 9), 268, 155, 44, 40, null); }
+		}
+		
 		g.setColor(Color.GRAY);
 		g.fillRect(210, 210, 300, 300);
 		
 		g.setColor(Color.BLACK);
 		g.fillRect(220, 220, 280, 280);
+	
+		g.setColor(Color.GRAY);
+		g.fillRect(210, 515, rectWidth, 70);
 		
+		g.setColor(Color.BLACK);
+		g.fillRect(220, 525, rectWidth - 20, 50);
+		
+		g.drawImage(Game.player.deadSprite, 224, 530, 24, 42, null);
+		g.setColor(Color.red);
+		g.drawString("x" + deathCount, 250, 562);
+		
+		if(bossKillCount > 0)
+		{
+			g.setColor(Color.GRAY);
+			g.fillRect(360, 515, 150, 70);
+			
+			g.setColor(Color.BLACK);
+			g.fillRect(370, 525, 130, 50);
+			
+			g.drawImage(Game.spritesheet.getSprite(18, 135, 14, 16), 371, 526, 42, 48, null);
+			
+			g.setFont(new Font("consolas", Font.BOLD, 28));
+			g.setColor(Color.green);
+			g.drawString("x" + bossKillCount, 414, 562);
+		}
 		{
 			int[] x = { 140, 200, 200 };
 			int[] y = { 360, 320, 400 };
@@ -307,5 +381,115 @@ public class UI
 	{
 		// 60 frames == 1 sec
 		return (int)(seconds * 60);
+	}
+	
+	public int finalCutscene(Graphics g, int frame)
+	{
+		Player player = Game.player;
+		frame++;
+		
+		if (frame == 1)
+		{
+			Camera.y = 0;
+			Camera.x = 47;
+			player.currentDirection = 1;
+			Sound.get().scream.play();
+		}
+				
+		if(frame <= 50)
+		{ g.drawImage(Game.spritesheet.getSprite(18, 135, 14, 16), 161 - Camera.x, 32 - Camera.y, null); }
+		
+		if(frame > 34)
+		{
+			Game.hideSprite = true;
+			g.drawImage(Game.spritesheet.getSprite(103, 135, 14, 16), 161 - Camera.x, 32 - Camera.y, null);
+			
+			if (player.getX() < 128)
+			{
+				player.animate();
+				player.x++;
+			}
+		}
+		
+		if(frame > 3)
+		{
+			g.setColor(new Color(0, 240, 0, 100));
+			g.drawLine(151 - Camera.x, 43 - Camera.y,
+					   180 - Camera.x, 40 - Camera.y);
+		}
+		
+		if(frame > 14)
+		{
+			g.setColor(new Color(0, 240, 0, 100));
+			g.drawLine(151 - Camera.x, 30 - Camera.y,
+					   190 - Camera.x, 54 - Camera.y);
+		}
+		
+		if(frame > 36)
+		{
+			g.setColor(new Color(0, 240, 0, 100));
+			g.drawLine(168 - Camera.x, 27 - Camera.y,
+					   168 - Camera.x, 54 - Camera.y);
+		}
+		
+		if(frame > 48)
+		{
+			g.setColor(new Color(0, 240, 0, 100));
+			g.drawLine(151 - Camera.x, 50 - Camera.y,
+					   188 - Camera.x, 30 - Camera.y);
+		}
+		
+		if (frame == 63)
+		{ player.currentDirection = 2; }
+		
+		if (frame > 65)
+		{
+			if (player.getY() > 16)
+			{
+				player.y--;
+				player.animate();
+			}
+		}
+		
+		if (frame == 100)
+		{ player.currentDirection = 1; }
+		
+		if (frame > 100 && player.getX() < 161)
+		{
+			player.x++;
+			player.animate();
+		}
+		
+		if (frame == 162)
+		{
+			player.index = 0;
+			player.currentDirection = 2;
+		}
+		
+		if (frame == 170)
+		{
+			Sound.get().portal.play();
+			Camera.y += 5;
+		}
+		
+		if (frame == 210)
+		{ Camera.y += 5; }
+		
+		if (frame == 180 || frame == 220)
+		{ Camera.x += 5; }
+		
+		if (frame == 190 || frame == 230)
+		{ Camera.y -= 5; }
+		
+		if (frame == 200 || frame == 240)
+		{ Camera.x -= 5; }
+		
+		if (frame > 240)
+		{
+			if (player.getY() > 2)
+			{ player.y--; }
+		}
+		
+		return frame;
 	}
 }

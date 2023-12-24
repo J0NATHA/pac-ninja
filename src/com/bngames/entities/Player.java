@@ -30,6 +30,7 @@ public class Player extends Entity
 	public boolean right, up, left, down, changedDir, isDamaged, hitWall, sneak;
 	
 	public BufferedImage[] upDir, downDir, leftDir, rightDir, orbCrush, wallHold;
+	public BufferedImage deadSprite;
 
 	public Player(int x, int y, int width, int height, int speed, BufferedImage sprite)
 	{
@@ -70,7 +71,11 @@ public class Player extends Entity
 		orbCrush[1] = Game.spritesheet.getSprite(70, 15, 16, 16);
 		orbCrush[2] = Game.spritesheet.getSprite(85, 15, 16, 16);
 		
+		deadSprite = Game.spritesheet.getSprite(22, 16, 8, 16);
+		
 		ui = new UI();
+		
+		depth = 1;
 	}
 	
 	public int getXTile()
@@ -84,11 +89,10 @@ public class Player extends Entity
 	}
 	
 	public boolean hasSuperHealth()
-	{ return superHealth; }
+	{ return superHealth || life == 3; }
 
 	public void tick()
 	{
-		depth = 1;
 		updateCamera();
 
 		if (hasSuperHealth())
@@ -176,7 +180,7 @@ public class Player extends Entity
 			invFrames++;
 
 			if (invFrames < 30)
-			{ speed = 3; }
+			{ speed = 4; }
 
 			else
 			{
@@ -402,6 +406,7 @@ public class Player extends Entity
 			{
 				if (!crushOrb)
 				{
+					depth = 1;
 					if (currentDirection == 0)
 					{ g.drawImage(downDir[0], this.getX() - Camera.x, this.getY() - Camera.y, null); }
 					
@@ -472,7 +477,7 @@ public class Player extends Entity
 						}
 					}
 				} 
-				else // growIt == true
+				else
 				{
 					g.drawImage(orbCrush[orbIndex], this.getX() - Camera.x, this.getY() - Camera.y, null);
 					animateOrb();
@@ -483,6 +488,7 @@ public class Player extends Entity
 
 				if (crushOrb)
 				{
+					depth = 4;
 					crushTime++;
 					
 					if (crushTime <= maxCrushTime)
@@ -527,7 +533,7 @@ public class Player extends Entity
 						blackoutFrames = 0;
 						crushOrb = false;
 						
-						if (life == 1)
+						if (Game.curLevel != Game.MAX_LEVEL && life == 1)
 						{ life++; }
 						
 						orbIndex = 0;
@@ -551,15 +557,11 @@ public class Player extends Entity
 					g.setColor(new Color(255, 0, 0, 50));
 					g.fillRect(0, 0, Game.WIDTH, Game.HEIGHT);
 				}
-
 			}
 		}
 
 		if (life == 0)
-		{
-			g.drawImage(Game.spritesheet.getSprite(22, 16, 8, 16), this.getX() - Camera.x, 
-						this.getY() - Camera.y, null);
-		}
+		{ g.drawImage(deadSprite, getX() + 3 - Camera.x, getY() - Camera.y, null); }
 
 		if (Game.gameState == "SCENE3" && Game.sceneFrames < 248)
 		{

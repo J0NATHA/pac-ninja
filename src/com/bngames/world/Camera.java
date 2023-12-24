@@ -19,14 +19,31 @@ public class Camera
 	
 	public static void place(int level)
 	{
-		if(level != Game.MAX_LEVEL)
+		switch(level)
 		{
-			Game.player.updateCamera();
-			return;
-		}
-		
-		// level == Game.MAX_LEVEL
-		x = 43;
-		y = 0;	
+			case Game.MAX_LEVEL:
+			{
+				x = 43;
+				y = 0;
+				return;
+			}
+			case 2:
+			{
+				x = 32;
+				y = 0;
+				return;
+			}
+			case 9:
+			{
+				x = 48;
+				y = 0;
+				return;
+			}
+			default:
+			{
+				Game.player.updateCamera();
+				return;
+			}
+		}	
 	}
 }

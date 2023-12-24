@@ -15,7 +15,7 @@ public class Red extends Entity
 	public boolean damage = false;
 
 	private int animationFrames = 0, spriteIndex = 0;
-	public static int maxLife = 5, curLife = 5;
+	public static int maxLife = 5, curLife = 0;
 
 	private BufferedImage[] sprites;
 
@@ -44,7 +44,7 @@ public class Red extends Entity
 
 	public boolean isCollidingWithPlayer()
 	{
-		int width = 20 * (maxLife - curLife + 1);
+		int width = 16 * (maxLife - curLife + 1);
 		int x = this.getX() - width / 2 + 8;
 		int y = this.getY() - width / 2 + 8;
 		
@@ -100,7 +100,8 @@ public class Red extends Entity
 			{ animate(); }
 		}
 		
-		if (curLife > 0 && (Game.gameState == "NORMAL" || Game.gameState == "PAUSE"))
+		if ((curLife > 0 && (Game.gameState == "NORMAL" || Game.gameState == "PAUSE"))
+			|| Game.gameState.equals("SCENE2") || Game.gameState.equals("SCENE1"))
 		{
 			int diameter = 36 * Game.bossTimer;
 			int x = this.getX() - Camera.x - diameter / 2 + 8;

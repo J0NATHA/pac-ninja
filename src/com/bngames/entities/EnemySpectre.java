@@ -11,7 +11,7 @@ import com.bngames.world.AStar;
 import com.bngames.world.Camera;
 import com.bngames.world.Vector2i;
 
-public class Enemy extends Entity
+public class EnemySpectre extends Entity
 {
 	private int greenWait = 0;
 	public boolean ghostMode = false, startGhost = false;
@@ -19,7 +19,7 @@ public class Enemy extends Entity
 	private BufferedImage[] sprites;
 	private double followRate = 1.0;
 
-	public Enemy(int x, int y, int width, int height, double speed, BufferedImage sprite)
+	public EnemySpectre(int x, int y, int width, int height, double speed, BufferedImage sprite)
 	{
 		super(x, y, width, height, 1, null);
 
@@ -55,7 +55,7 @@ public class Enemy extends Entity
 	public void tick()
 	{
 		depth = 0;
-		if (Game.curLevel == 6 && Game.gameState == "NORMAL")
+		if (Game.curLevel == Game.MAX_LEVEL && Game.gameState == "NORMAL")
 		{
 			bossBattleMode();
 		}
@@ -66,7 +66,7 @@ public class Enemy extends Entity
 		}
 
 		if (ghostMode == false)
-			chaseStart();
+		{ chaseStart(); }
 
 		if (Player.crushOrb)
 		{
@@ -75,11 +75,10 @@ public class Enemy extends Entity
 			{
 				orbFrames++;
 				if (orbFrames == 4)
-				{
-					Game.orbsPicked--;
-				}
+				{ Game.orbsPicked--; }
+				
 				if (orbFrames == 5)
-					orbFrames = 0;
+				{ orbFrames = 0; }
 			}
 		}
 
@@ -87,9 +86,9 @@ public class Enemy extends Entity
 		{
 			ghostFrames++;
 			if (ghostFrames <= 60 * 4)
-			{
-				ghostMode = true;
-			} else
+			{ ghostMode = true; }
+			
+			else
 			{
 				ghostFrames = 0;
 				ghostMode = false;
@@ -101,8 +100,8 @@ public class Enemy extends Entity
 		{
 			if (Game.player.isDamaged == false)
 			{
-				Game.player.life--;
 				Sound.get().hit.play();
+				Game.player.life--;
 				Game.player.isDamaged = true;
 			}
 		}
@@ -118,46 +117,51 @@ public class Enemy extends Entity
 
 	private void animate()
 	{
-		if (Game.gameState == "NORMAL")
-			frames++;
-		if (frames == maxFrames)
+		if(!Game.gameState.equals("PAUSE"))
+		{ frames++; }
+		
+		if(frames == maxFrames)
 		{
 			frames = 0;
 			index++;
+			
 			if (index >= maxIndex)
-				index = 0;
+			{ index = 0; }
 		}
 	}
 
 	public boolean isCollidingWithPlayer()
 	{
-		Rectangle enemyCurrent = new Rectangle(this.getX() + 2, this.getY(), 12, 17);
-		Rectangle player = new Rectangle(Game.player.getX() - Game.player.maskX,
-				Game.player.getY() - Game.player.maskY, Game.player.maskW, Game.player.maskH);
+		Rectangle enemyCurrent = new Rectangle(getX() + 2, getY(), 12, 17);
+		
+		Rectangle player = new Rectangle(
+								Game.player.getX() - Game.player.maskX,
+								Game.player.getY() - Game.player.maskY, 
+								Game.player.maskW, 
+								Game.player.maskH
+							);
 		
 		return enemyCurrent.intersects(player);
 	}
 
 	public void render(Graphics g)
 	{
-//			g.fillRect(this.getX()+2, this.getY(), 12,17);
+//		g.fillRect(getX() + 2, getY(), 12, 17);
 
 		if (ghostMode == false)
 		{
 			greenWait = 0;
-			g.drawImage(sprites[index], this.getX() - Camera.x, this.getY() - Camera.y, null);
+			g.drawImage(sprites[index], getX() - Camera.x, getY() - Camera.y, null);
 			animate();
-		} else
+		}
+		else
 		{
 			greenWait++;
 			if (greenWait < 15)
-			{
-				g.drawImage(sprites[index], this.getX() - Camera.x, this.getY() - Camera.y, null);
-			} else if (greenWait >= 15)
-				g.drawImage(Game.spritesheet.getSprite(108, 4, 16, 17), this.getX() - Camera.x, this.getY() - Camera.y,
-						null);
+			{ g.drawImage(sprites[index], getX() - Camera.x, getY() - Camera.y, null); }
+			
+			else if (greenWait >= 15)
+			{ g.drawImage(Game.spritesheet.getSprite(108, 4, 16, 17), getX() - Camera.x, getY() - Camera.y, null); }
 		}
-
 	}
-
 }

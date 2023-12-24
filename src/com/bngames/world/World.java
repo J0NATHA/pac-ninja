@@ -8,8 +8,8 @@ import java.util.Random;
 
 import javax.imageio.ImageIO;
 
-import com.bngames.entities.Enemy;
-import com.bngames.entities.Enemy2;
+import com.bngames.entities.EnemySpectre;
+import com.bngames.entities.EnemyShuriken;
 import com.bngames.entities.Entity;
 import com.bngames.entities.Particle;
 import com.bngames.entities.ParticleBossHealth;
@@ -69,48 +69,75 @@ public class World
 
 					int pixelAtual = pixels[xx + (yy * map.getWidth())];
 					
-					if (Game.curLevel < 9)
-					{
-						tiles[xx + (yy * WIDTH)] = new FloorTile(xx * 16, yy * 16, Tile.Tile_FLOOR);
-					}
+					ArrayList<Integer> surroundingPixels = new ArrayList<Integer>();
+					
+					add(surroundingPixels, pixels, xx + (yy * WIDTH) + 1);
+					add(surroundingPixels, pixels, xx + (yy * WIDTH) - 1);
+					add(surroundingPixels, pixels, xx + (yy * WIDTH) + WIDTH);
+					add(surroundingPixels, pixels, xx + (yy * WIDTH) - WIDTH);
+					add(surroundingPixels, pixels, xx + (yy * WIDTH) + WIDTH + 1);
+					add(surroundingPixels, pixels, xx + (yy * WIDTH) - WIDTH + 1);
+					add(surroundingPixels, pixels, xx + (yy * WIDTH) + WIDTH - 1);
+					add(surroundingPixels, pixels, xx + (yy * WIDTH) - WIDTH - 1);
+					
+					if(Game.curLevel < 9)
+					{ tiles[xx + (yy * WIDTH)] = new FloorTile(xx * 16, yy * 16, Tile.TILE_FLOOR); }
 
-					else if (Game.curLevel >= 9)
+					else if(Game.curLevel >= 9)
 					{
-						tiles[xx + (yy * WIDTH)] = new FloorTile(xx * 16, yy * 16, Tile.Tile_CAVE[0]);
+						int index = new Random().nextInt(2); 
+						tiles[xx + (yy * WIDTH)] = new FloorTile(xx * 16, yy * 16, Tile.TILE_FLOOR2[index]);
 					}
 
 					if (pixelAtual == 0xFF000000)
 					{
 						// Chao
 						if (Game.curLevel < 9)
-						{ tiles[xx + (yy * WIDTH)] = new FloorTile(xx * 16, yy * 16, Tile.Tile_FLOOR); }
+						{ tiles[xx + (yy * WIDTH)] = new FloorTile(xx * 16, yy * 16, Tile.TILE_FLOOR); }
 						
 						else if (Game.curLevel >= 9)
 						{
-							if (new Random().nextInt(100) < 50)
-								tiles[xx + (yy * WIDTH)] = new FloorTile(xx * 16, yy * 16, Tile.Tile_CAVE[0]);
-							else
-								tiles[xx + (yy * WIDTH)] = new FloorTile(xx * 16, yy * 16, Tile.Tile_CAVE[1]);
+							int index = new Random().nextInt(2); 
+							tiles[xx + (yy * WIDTH)] = new FloorTile(xx * 16, yy * 16, Tile.TILE_FLOOR2[index]);
 						}
 					} 
 					else if (pixelAtual == 0xFFFFFFFF)
 					{
-// 						Parede
-						if (Game.curLevel < 9)
+// 						Wall
+						if (Game.curLevel < 8)
 						{
-							tiles[xx + (yy * WIDTH)] = new WallTile(xx * 16, yy * 16, Tile.Tile_WALL);
+							tiles[xx + (yy * WIDTH)] = new WallTile(xx * 16, yy * 16, Tile.TILE_WALL);
 						} 
+						
+						else if(Game.curLevel == 8)
+						{
+							int matches = 0;
+							
+							for(int pixel : surroundingPixels)
+							{
+								if(pixel == 0xFFD63F35)
+								{ ++matches; }
+							}
+							
+							if(matches >= 2)
+							{
+								int index = new Random().nextInt(2); 
+								tiles[xx + (yy * WIDTH)] = new WallTile(xx * 16, yy * 16, Tile.TILE_WALL2[index]);
+							}
+							
+							else
+							{ tiles[xx + (yy * WIDTH)] = new WallTile(xx * 16, yy * 16, Tile.TILE_WALL); }
+						}
+						
 						else if (Game.curLevel >= 9)
 						{
-							if (new Random().nextInt(100) < 50)
-								tiles[xx + (yy * WIDTH)] = new WallTile(xx * 16, yy * 16, Tile.Tile_WALL2[0]);
-							else
-								tiles[xx + (yy * WIDTH)] = new WallTile(xx * 16, yy * 16, Tile.Tile_WALL2[1]);
+							int index = new Random().nextInt(2); 
+							tiles[xx + (yy * WIDTH)] = new WallTile(xx * 16, yy * 16, Tile.TILE_WALL2[index]);
 						}
 					}
 					else if (pixelAtual == 0xFF4800FF)
 					{
-//							Player
+//						Player
 						Game.player.setX(xx * 16);
 						Game.player.setY(yy * 16);
 					}
@@ -122,8 +149,9 @@ public class World
 					}
 					else if (pixelAtual == 0xFFFF0000)
 					{
-//							Inimigo de fogo
-						Enemy2 enemy = new Enemy2(xx * 16, yy * 16, 16, 16, 1, Entity.ENEMY_EN);
+//						Spinning Shuriken
+						EnemyShuriken enemy = new EnemyShuriken(xx * 16, yy * 16, 16, 16, 1, 
+														Game.spritesheet.getSprite(2, 33, 13, 13));
 						Game.entities.add(enemy);
 
 					} 
@@ -135,8 +163,14 @@ public class World
 							Orb orb = new Orb((xx * 16) + 3, (yy * 16) + 3, 8, 8, 0, Entity.ORB_SPRITE);
 							Game.entities.add(orb);
 							Game.orbContagem++;
+							
+							if(Game.curLevel == 8 && surroundingPixels.contains(0xFFD63F35))
+							{
+								int index = new Random().nextInt(2);
+								tiles[xx + (yy * WIDTH)] = new FloorTile(xx * 16, yy * 16, Tile.TILE_FLOOR2[index]);
+							}
 						} 
-						else if (Game.curLevel == Game.MAX_LEVEL) //&& Game.orbContagem < 20 && (new Random().nextInt(100) < 10))
+						else if (Game.curLevel == Game.MAX_LEVEL)
 						{
 							Orb orb = new Orb((xx * 16) + 3, (yy * 16) + 3, 8, 8, 0, Entity.ORB_SPRITE);
 							orbsBoss.add(orb);
@@ -148,16 +182,17 @@ public class World
 //						Inimigo
 						if (Game.curLevel != Game.MAX_LEVEL)
 						{
-							Enemy en = new Enemy(xx * 16, yy * 16, 16, 16, 1, Entity.ENEMY_EN);
+							EnemySpectre en = new EnemySpectre(xx * 16, yy * 16, 16, 16, 1, Entity.ENEMY_EN);
 							Game.entities.add(en);
 
-						} else if (Game.curLevel == Game.MAX_LEVEL && Game.spawnEnemies == true)
+						} 
+						else if (Game.curLevel == Game.MAX_LEVEL && Game.spawnEnemies == true)
 						{
 							if (Red.curLife == 3 && Game.enemies.size() == 0)
 							{
 								if (new Random().nextInt(100) < 50)
 								{
-									Enemy en = new Enemy(xx * 16, yy * 16, 16, 16, 1, Entity.ENEMY_EN);
+									EnemySpectre en = new EnemySpectre(xx * 16, yy * 16, 16, 16, 1, Entity.ENEMY_EN);
 									Game.entities.add(en);
 									Game.enemies.add(en);
 								}
@@ -167,7 +202,7 @@ public class World
 							{
 								if (new Random().nextInt(100) < 50)
 								{
-									Enemy en = new Enemy(xx * 16, yy * 16, 16, 16, 1, Entity.ENEMY_EN);
+									EnemySpectre en = new EnemySpectre(xx * 16, yy * 16, 16, 16, 1, Entity.ENEMY_EN);
 									Game.entities.add(en);
 									Game.enemies.add(en);
 								}
@@ -177,7 +212,7 @@ public class World
 							{
 								if (new Random().nextInt(100) < 50)
 								{
-									Enemy en = new Enemy(xx * 16, yy * 16, 16, 16, 1, Entity.ENEMY_EN);
+									EnemySpectre en = new EnemySpectre(xx * 16, yy * 16, 16, 16, 1, Entity.ENEMY_EN);
 									Game.entities.add(en);
 									Game.enemies.add(en);
 									if (Game.enemies.size() == 3)
@@ -186,14 +221,13 @@ public class World
 							}
 						}
 
-					} else if (pixelAtual == 0xFFD63F35)
+					}
+					else if (pixelAtual == 0xFFD63F35)
 					{
-						if (new Random().nextInt(100) < 50)
-							tiles[xx + (yy * WIDTH)] = new FloorTile(xx * 16, yy * 16, Tile.Tile_CAVE[0]);
-						else
-							tiles[xx + (yy * WIDTH)] = new FloorTile(xx * 16, yy * 16, Tile.Tile_CAVE[1]);
-
-					} else if (pixelAtual == 0xFF00FFFF)
+						int index = new Random().nextInt(2);
+						tiles[xx + (yy * WIDTH)] = new FloorTile(xx * 16, yy * 16, Tile.TILE_FLOOR2[index]);
+					}
+					else if (pixelAtual == 0xFF00FFFF)
 					{
 						Entity en = new Red(xx * 16, yy * 16, 16, 16, 1, Entity.ENEMY_EN);
 						Game.entities.add(en);
@@ -201,26 +235,13 @@ public class World
 
 					if (Game.curLevel == Game.MAX_LEVEL)
 					{
-						if (new Random().nextInt(100) < 50)
+						int chance =(int)((1.1 - ((double)Red.curLife / Red.maxLife)) * 100);
+						
+						if (pixelAtual == 0xFFB200FF && new Random().nextInt(100) < chance)
 						{
-							if (pixelAtual == 0xFFB200FF)
-							{
-								if (new Random().nextInt(100) < 50)
-									tiles[xx + (yy * WIDTH)] = new WallTile(xx * 16, yy * 16, Tile.Tile_WALL2[0]);
-								else
-									tiles[xx + (yy * WIDTH)] = new WallTile(xx * 16, yy * 16, Tile.Tile_WALL2[1]);
-							}
-
-						} else
-						{
-							if (pixelAtual == 0xFFFF007F)
-							{
-								if (new Random().nextInt(100) < 50)
-									tiles[xx + (yy * WIDTH)] = new WallTile(xx * 16, yy * 16, Tile.Tile_WALL2[0]);
-								else
-									tiles[xx + (yy * WIDTH)] = new WallTile(xx * 16, yy * 16, Tile.Tile_WALL2[1]);
-							}
-						}
+							int index = new Random().nextInt(2); 
+							tiles[xx + (yy * WIDTH)] = new WallTile(xx * 16, yy * 16, Tile.TILE_WALL2[index]);
+						} 
 					}
 				}
 			}
@@ -273,6 +294,12 @@ public class World
 			Game.entities.add(new ParticleBossHealth(x, y, 3, 3, 1, null));
 		}
 	}
+	
+	private void add(ArrayList<Integer> surroundingPixels, int[] pixels, int position)
+	{
+		if(position >= 0 && position < pixels.length)
+		{ surroundingPixels.add(pixels[position]); }
+	}
 
 	public static boolean isFree(int xnext, int ynext)
 	{
@@ -303,7 +330,7 @@ public class World
 		Game.orbsPicked = 0;
 
 		Game.entities = new ArrayList<Entity>();
-		Game.enemies = new ArrayList<Enemy>();
+		Game.enemies = new ArrayList<EnemySpectre>();
 		Game.spritesheet = new Spritesheet("/spritesheet.png");
 		Game.player = new Player(0, 0, 16, 16, 1, Game.spritesheet.getSprite(32, 0, 16, 16));
 		Game.entities.add(Game.player);
