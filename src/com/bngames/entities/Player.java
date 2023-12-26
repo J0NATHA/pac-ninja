@@ -25,7 +25,7 @@ public class Player extends Entity
 				orbFrames, orbIndex, orbMax = 3, invFrames, crushTime, maxCrushTime = 35,
 				life = 2, soundFrames;
 	
-	public static boolean crushOrb, superHealth;
+	public boolean crushOrb, superHealth;
 	
 	public boolean right, up, left, down, changedDir, isDamaged, hitWall, sneak;
 	
@@ -36,40 +36,52 @@ public class Player extends Entity
 	{
 		super(x, y, width, height, speed, sprite);
 		
-		wallHold = new BufferedImage[4];
-		wallHold[0] = Game.spritesheet.getSprite(48, 96, 16, 16);
-		wallHold[1] = Game.spritesheet.getSprite(48, 80, 16, 16);
-		wallHold[2] = Game.spritesheet.getSprite(32, 96, 16, 16);
-		wallHold[3] = Game.spritesheet.getSprite(32, 80, 16, 16);
+		wallHold = new BufferedImage[] 
+		{
+			Game.spritesheet.getSprite(48, 96, 16, 16),
+			Game.spritesheet.getSprite(48, 80, 16, 16),
+			Game.spritesheet.getSprite(32, 96, 16, 16),
+			Game.spritesheet.getSprite(32, 80, 16, 16)				
+		};
 
-		upDir = new BufferedImage[4];
-		upDir[0] = Game.spritesheet.getSprite(65, 48, 14, 16);
-		upDir[1] = Game.spritesheet.getSprite(81, 48, 14, 16);
-		upDir[2] = Game.spritesheet.getSprite(97, 48, 14, 16);
-		upDir[3] = Game.spritesheet.getSprite(113, 48, 14, 16);
+		upDir = new BufferedImage[]
+		{
+			Game.spritesheet.getSprite(65, 48, 14, 16),
+			Game.spritesheet.getSprite(81, 48, 14, 16),
+			Game.spritesheet.getSprite(97, 48, 14, 16),
+			Game.spritesheet.getSprite(113, 48, 14, 16)				
+		};
 
-		downDir = new BufferedImage[4];
-		downDir[0] = Game.spritesheet.getSprite(65, 32, 14, 16);
-		downDir[1] = Game.spritesheet.getSprite(81, 32, 14, 16);
-		downDir[2] = Game.spritesheet.getSprite(97, 32, 14, 16);
-		downDir[3] = Game.spritesheet.getSprite(113, 32, 14, 16);
+		downDir = new BufferedImage[]
+		{
+			Game.spritesheet.getSprite(65, 32, 14, 16),	
+			Game.spritesheet.getSprite(81, 32, 14, 16),
+			Game.spritesheet.getSprite(97, 32, 14, 16),
+			Game.spritesheet.getSprite(113, 32, 14, 16)
+		}; 
+		
+		leftDir = new BufferedImage[]
+		{
+			Game.spritesheet.getSprite(65, 80, 14, 16),
+			Game.spritesheet.getSprite(80, 80, 14, 16),
+			Game.spritesheet.getSprite(96, 80, 14, 16),
+			Game.spritesheet.getSprite(112, 80, 14, 16)
+		};
 
-		leftDir = new BufferedImage[4];
-		leftDir[0] = Game.spritesheet.getSprite(65, 80, 14, 16);
-		leftDir[1] = Game.spritesheet.getSprite(80, 80, 14, 16);
-		leftDir[2] = Game.spritesheet.getSprite(96, 80, 14, 16);
-		leftDir[3] = Game.spritesheet.getSprite(112, 80, 14, 16);
+		rightDir = new BufferedImage[]
+		{
+			Game.spritesheet.getSprite(64, 96, 14, 16),
+			Game.spritesheet.getSprite(80, 96, 14, 16),
+			Game.spritesheet.getSprite(96, 96, 14, 16),
+			Game.spritesheet.getSprite(112, 96, 14, 16)
+		};
 
-		rightDir = new BufferedImage[4];
-		rightDir[0] = Game.spritesheet.getSprite(64, 96, 14, 16);
-		rightDir[1] = Game.spritesheet.getSprite(80, 96, 14, 16);
-		rightDir[2] = Game.spritesheet.getSprite(96, 96, 14, 16);
-		rightDir[3] = Game.spritesheet.getSprite(112, 96, 14, 16);
-
-		orbCrush = new BufferedImage[3];
-		orbCrush[0] = Game.spritesheet.getSprite(55, 15, 16, 16);
-		orbCrush[1] = Game.spritesheet.getSprite(70, 15, 16, 16);
-		orbCrush[2] = Game.spritesheet.getSprite(85, 15, 16, 16);
+		orbCrush = new BufferedImage[]
+		{
+			Game.spritesheet.getSprite(55, 15, 16, 16),
+			Game.spritesheet.getSprite(70, 15, 16, 16),
+			Game.spritesheet.getSprite(85, 15, 16, 16)
+		};
 		
 		deadSprite = Game.spritesheet.getSprite(22, 16, 8, 16);
 		
@@ -110,66 +122,86 @@ public class Player extends Entity
 		if (crushOrb && Game.orbsPicked > 0)
 		{ Game.orbsPicked--; }
 		
-		if (!crushOrb)
-		{
-			if (right)
+		if(!crushOrb)
+		{ 
+			if(right)
 			{
 				currentDirection = 1;
 				
-				if (World.isFree((int) (x + speed), this.getY()))
+				if(World.isFree((int)(x + speed), getY()))
 				{
 					x += speed;
 					changedDir = true;
 				}
 				
 				else
-				{ fitIn(lastDirection); }	
+				{ 
+					fitIn(lastDirection); 
+
+					if(World.isFree((int)(x + 1), getY()))
+					{ x += 1; }
+				}	
 			}
 
-			else if (left)
+			else if(left)
 			{
 				currentDirection = -1;
 				
-				if (World.isFree((int) (x - speed), this.getY()))
+				if(World.isFree((int) (x - speed), getY()))
 				{
 					x -= speed;
 					changedDir = true;
 				}
 				
 				else
-				{ fitIn(lastDirection); }
+				{ 
+					fitIn(lastDirection);
+
+					if(World.isFree((int)(x - 1), getY()))
+					{ x -= 1; }
+				}
 			}
 
-			if (up)
+			if(up)
 			{
 				currentDirection = 2;
 				
-				if (World.isFree(this.getX(), (int) (y - speed)))
+				if (World.isFree(this.getX(), (int)(y - speed)))
 				{
 					y -= speed;
 					changedDir = true;
 				}
 				
 				else
-				{ fitIn(lastDirection); }
+				{ 
+					fitIn(lastDirection); 
+
+					if(World.isFree(getX(), (int)(y - 1)))
+					{ y -= 1; }
+				}
 			}
 
-			else if (down)
+			else if(down)
 			{
 				currentDirection = -2;
 				
-				if (World.isFree(this.getX(), (int) (y + speed)))
+				if (World.isFree(this.getX(), (int)(y + speed)))
 				{
 					y += speed;
 					changedDir = true;
 				}
 				
 				else
-				{ fitIn(lastDirection); }
+				{ 
+					fitIn(lastDirection);
+					
+					if(World.isFree(getX(), (int)(y + 1)))
+					{ y += 1; }
+				}
 			}
 		}
 
-		if (isDamaged)
+		if(isDamaged)
 		{
 			if (hasSuperHealth())
 			{
@@ -179,7 +211,7 @@ public class Player extends Entity
 
 			invFrames++;
 
-			if (invFrames < 30)
+			if(invFrames < 30)
 			{ speed = 4; }
 
 			else
@@ -366,7 +398,6 @@ public class Player extends Entity
 		if (hitWall)
 		{
 			Sound.get().hitwall.play();
-			
 			hitWall = false;
 		}
 	}
@@ -467,7 +498,6 @@ public class Player extends Entity
 							hitWall = true;
 							animate();
 							g.drawImage(downDir[index], this.getX() - Camera.x, this.getY() - Camera.y, null);
-							animate();
 						} 
 						
 						else

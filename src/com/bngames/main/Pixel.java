@@ -2,7 +2,6 @@ package com.bngames.main;
 
 public class Pixel
 {
-
 	public static final int WHITE = 0xffffffff;
 	public static final int RED = 0xffff0000;
 	public static final int GREEN = 0xff00ff00;
@@ -55,12 +54,15 @@ public class Pixel
 		float r = getRed(light);
 		float g = getGreen(light);
 		float b = getBlue(light);
+		
 		if (r < getRed(ambientLight))
-			r = getRed(ambientLight);
+		{ r = getRed(ambientLight); }
+		
 		if (g < getGreen(ambientLight))
-			g = getGreen(ambientLight);
+		{ g = getGreen(ambientLight); }
+		
 		if (b < getBlue(ambientLight))
-			b = getBlue(ambientLight);
+		{ b = getBlue(ambientLight); }
 
 		return getColor(1, r * getRed(color), g * getGreen(color), b * getBlue(color));
 	}

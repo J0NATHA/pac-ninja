@@ -13,21 +13,23 @@ import com.bngames.world.Vector2i;
 
 public class EnemySpectre extends Entity
 {
-	private int greenWait = 0;
-	public boolean ghostMode = false, startGhost = false;
-	private int frames = 0, orbFrames = 0, maxFrames = 11, index = 0, maxIndex = 4, ghostFrames = 0;
-	private BufferedImage[] sprites;
+	private int stunTime;
+	public boolean stunned;
+	private int frames, orbFrames = 0, maxFrames = 11, index = 0, maxIndex = 4, stunFrames = 0;
 	private double followRate = 1.0;
+	private BufferedImage[] sprites;
 
 	public EnemySpectre(int x, int y, int width, int height, double speed, BufferedImage sprite)
 	{
 		super(x, y, width, height, 1, null);
 
-		sprites = new BufferedImage[4];
-		sprites[0] = Game.spritesheet.getSprite(128, 4, 16, 17);
-		sprites[1] = Game.spritesheet.getSprite(144, 7, 16, 17);
-		sprites[2] = Game.spritesheet.getSprite(128, 23, 16, 17);
-		sprites[3] = Game.spritesheet.getSprite(144, 31, 16, 17);
+		sprites = new BufferedImage[] 
+		{
+			Game.spritesheet.getSprite(128, 4, 16, 17),
+			Game.spritesheet.getSprite(144, 7, 16, 17),
+			Game.spritesheet.getSprite(128, 23, 16, 17),
+			Game.spritesheet.getSprite(144, 31, 16, 17)	
+		};
 	}
 
 	private void chaseStart()
@@ -56,24 +58,25 @@ public class EnemySpectre extends Entity
 	{
 		depth = 0;
 		if (Game.curLevel == Game.MAX_LEVEL && Game.gameState == "NORMAL")
-		{
-			bossBattleMode();
-		}
+		{ bossBattleMode(); }
+		
 		if (Game.restartGame)
 		{
 			Game.enemies.clear();
 			Game.entities.clear();
 		}
 
-		if (ghostMode == false)
+		if(stunned == false)
 		{ chaseStart(); }
 
-		if (Player.crushOrb)
+		if(Game.player.crushOrb)
 		{
-			startGhost = true;
+			stunned = true;
+			
 			if (Game.orbsPicked > 0)
 			{
 				orbFrames++;
+				
 				if (orbFrames == 4)
 				{ Game.orbsPicked--; }
 				
@@ -82,37 +85,32 @@ public class EnemySpectre extends Entity
 			}
 		}
 
-		if (startGhost)
+		if(stunned)
 		{
-			ghostFrames++;
-			if (ghostFrames <= 60 * 4)
-			{ ghostMode = true; }
+			stunFrames++;
+			
+			if(stunFrames <= 60 * 4)
+			{ stunned = true; }
 			
 			else
 			{
-				ghostFrames = 0;
-				ghostMode = false;
-				startGhost = false;
+				stunFrames = 0;
+				stunned = false;
 			}
 		}
 
-		if (isCollidingWithPlayer() && ghostMode == false)
+		if (isCollidingWithPlayer() && !stunned && !Game.player.isDamaged)
 		{
-			if (Game.player.isDamaged == false)
-			{
-				Sound.get().hit.play();
-				Game.player.life--;
-				Game.player.isDamaged = true;
-			}
+			Sound.get().hit.play();
+			Game.player.life--;
+			Game.player.isDamaged = true;
 		}
 	}
 
 	private void bossBattleMode()
 	{
 		if (Game.bossTimer != 0)
-		{
-			followRate = 1.0 - (Game.bossTimer * 0.025);
-		}
+		{ followRate = 1.0 - (Game.bossTimer * 0.025); }
 	}
 
 	private void animate()
@@ -146,21 +144,20 @@ public class EnemySpectre extends Entity
 
 	public void render(Graphics g)
 	{
-//		g.fillRect(getX() + 2, getY(), 12, 17);
-
-		if (ghostMode == false)
+		if (!stunned)
 		{
-			greenWait = 0;
+			stunTime = 0;
 			g.drawImage(sprites[index], getX() - Camera.x, getY() - Camera.y, null);
 			animate();
 		}
+		
 		else
 		{
-			greenWait++;
-			if (greenWait < 15)
+			stunTime++;
+			if (stunTime < 15)
 			{ g.drawImage(sprites[index], getX() - Camera.x, getY() - Camera.y, null); }
 			
-			else if (greenWait >= 15)
+			else if (stunTime >= 15)
 			{ g.drawImage(Game.spritesheet.getSprite(108, 4, 16, 17), getX() - Camera.x, getY() - Camera.y, null); }
 		}
 	}

@@ -18,19 +18,6 @@ public abstract class SaveGame
 				+ File.separator + "AppData" + File.separator + "Local" + File.separator  
 				+ "pacninja" + File.separator + Game.GAME_VERSION + File.separator
 			);
-		
-	public static SaveFile loadFile()
-	{
-		try 
-		{
-			Gson gson = new Gson();
-			Reader reader = new FileReader(SAVE_DIRECTORY.getAbsolutePath() + File.separator + FILE_NAME);
-			return gson.fromJson(reader, SaveFile.class);
-		}
-		
-		catch (Exception e) 
-		{ return new SaveFile(); }	
-	}
 	
 	private static void gsonWrite(SaveFile file) throws IOException
 	{
@@ -114,6 +101,21 @@ public abstract class SaveGame
 		{ e.printStackTrace(); }
 	}
 	
+	public static SaveFile loadFile()
+	{
+		try 
+		{
+			Gson gson = new Gson();
+			Reader reader = new FileReader(SAVE_DIRECTORY.getAbsolutePath() + File.separator + FILE_NAME);
+			SaveFile file = gson.fromJson(reader, SaveFile.class);
+			reader.close();
+			return file;
+		}
+		
+		catch (Exception e) 
+		{ return new SaveFile(); }	
+	}
+	
 	public static int latestCompletedLevel()
 	{
 		SaveFile file = loadFile();
@@ -122,7 +124,19 @@ public abstract class SaveGame
 		{ return 0; }
 		
 		ArrayList<Integer> completedLevels = file.getCompletedLevels();
-		
+
 		return completedLevels.get(completedLevels.size() - 1);
+	}
+	
+	public static void eraseSave()
+	{
+		try 
+		{
+			File file = new File(SAVE_DIRECTORY.getAbsolutePath() + File.separator + FILE_NAME);
+			file.delete();
+		}
+		
+		catch(Exception e)
+		{ e.printStackTrace(); }
 	}
 }

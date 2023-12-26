@@ -19,7 +19,7 @@ import com.bngames.world.Camera;
 
 public class UI
 {
-	private int framesSplashScreen = 0;
+	private int framesSplashScreen, saveIconFrames;
 
 	public void render(Graphics g)
 	{
@@ -28,19 +28,17 @@ public class UI
 		
 		if (Game.curLevel != Game.MAX_LEVEL)
 		{
-			double distance = Math.sqrt(
-						       	  Math.pow(16 - Game.player.getX(), 2) +
-						       	  Math.pow(16 - Game.player.getY(), 2) 
-					       	  );
+			double distance = Entity.calculateDistance(16, 16, Game.player.getX(), Game.player.getY());
 			
-			int alpha = distance < 30 ? 100 : 255;
-			g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float)alpha / 255));
-			
+			int alpha = distance < 30 ? 100 : 255;			
 			double completionPercentage = (double) Game.orbAtual / Game.orbContagem;
 			int arcAngle = - (int)(completionPercentage * 360);
+			var composite = g2.getComposite();
 			
+			g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha / 255.0f));
 			g.setColor(new Color(0, 0, 0, 150));
 			g.fillArc(10, 10, 100, 100, 90, 360);
+			g2.setComposite(composite);
 			
 			g.setColor(new Color(0, 255, 0, alpha));
 			g.fillArc(10, 10, 100, 100, 90, arcAngle);
@@ -171,7 +169,7 @@ public class UI
 			g.drawRoundRect(44, 9, Red.maxLife * 30 + 1, 10, 2, 2);
 			g.setColor(Color.red);
 			
-			if (Player.crushOrb)
+			if (Game.player.crushOrb)
 			{ g.setColor(Color.green); }
 			
 			g.fillRoundRect(45, 10, Red.curLife * 30, 9, 1, 1);
@@ -185,34 +183,61 @@ public class UI
 		int deathCount = SaveGame.loadFile().getDeathCount();
 		int rectWidth = bossKillCount > 0 ? 145 : 300;
 		g.setFont(new Font("consolas", Font.BOLD, 28));
+				
+		// Q key background
+		g.setColor(new Color(0, 0, 0, 180));
+		g.fillRect(210, 159, 33, 33);
 		
-		g.setColor(Color.GRAY);
-		g.fillRect(265, 150, 50, 50);
+		g.setColor(Color.red);
+		g.drawString("Q", 218, 182);
 		
-		g.setColor(Color.BLACK);
-		g.fillRect(275, 160, 30, 30);
+		// Image background
+		g.setColor(new Color(255, 255, 255, 160));
+		g.fillRect(253, 150, 50, 50);
+		
+		var trashcanSprite = Game.spritesheet.getSprite(131, 97, 11, 15);
+		g.drawImage(trashcanSprite, 262, 153, 33, 45, null);
+		
+		double trashcanArcPercentage = Game.eraseSaveFrames / 120.0;
+		int angle = - (int)(trashcanArcPercentage * 360);
+		g.setColor(new Color(255, 0, 0, 170 + (int)(85 * trashcanArcPercentage)));
+		g.fillArc(253, 150, 50, 50, 90, angle);
+		
+		g.setColor(new Color(255, 255, 255, 0));
+		g.fillArc(265, 155, 40, 40, 90, 360);
 		
 		if(Game.finished)
-		{			
-			g.setColor(Color.white);
-			g.fillRect(210, 150, 50, 50);
-			g.setColor(Color.black);
-			g.fillRect(212, 152, 46, 46);
-			g.setColor(Color.white);
-			g.drawString("E", 226, 184);
+		{	
+			// E key background
+			g.setColor(new Color(0, 0, 0, 180));
+			g.fillRect(417, 159, 33, 33);
 			
-			g.drawImage(Game.spritesheet.getSprite(148, 146, 10, 11), 320, 155, 40, 44, null);
+			g.setColor(Color.green);
+			g.drawString("E", 425, 184);
+
+			// Image background
+			g.setColor(new Color(255, 255, 255, 160));
+			g.fillRect(460, 150, 50, 50);
 			
+			var superHealthSprite = Game.spritesheet.getSprite(148, 146, 10, 11); 
+			g.drawImage(superHealthSprite, 465, 153, 40, 44, null);
+			
+			// Checkmark
 			if(Game.superHealthNextLevel)
-			{ g.drawImage(Game.spritesheet.getSprite(144, 85, 16, 9), 268, 155, 44, 40, null); }
+			{ 
+				var checkmarkSprite = Game.spritesheet.getSprite(144, 85, 16, 9); 
+				g.drawImage(checkmarkSprite, 468, 155, 44, 40, null); 
+			}
 		}
 		
+		// Level square
 		g.setColor(Color.GRAY);
 		g.fillRect(210, 210, 300, 300);
 		
 		g.setColor(Color.BLACK);
 		g.fillRect(220, 220, 280, 280);
 	
+		// Death count rectangle
 		g.setColor(Color.GRAY);
 		g.fillRect(210, 515, rectWidth, 70);
 		
@@ -238,6 +263,7 @@ public class UI
 			g.drawString("x" + bossKillCount, 414, 562);
 		}
 		{
+			// Left arrow
 			int[] x = { 140, 200, 200 };
 			int[] y = { 360, 320, 400 };
 			
@@ -259,7 +285,7 @@ public class UI
 			g.fillPolygon(x, y, 3);
 		}		
 		{
-						
+			// Right arrow
 			int[] x = { 580, 520, 520 };
 			int[] y = { 360, 320, 400 };
 
@@ -281,9 +307,11 @@ public class UI
 			g.fillPolygon(x, y, 3);
 		}
 		
+		// Redness of the number
 		double progressPercentage = 1 - ((double)level / Game.MAX_LEVEL);		
 		int blueGreen = (int)(255 * progressPercentage);
 		
+		// Level number
 		g.setColor(new Color(255, blueGreen, blueGreen, 255));
 		g.setFont(new Font("consolas", Font.CENTER_BASELINE, 200));
 		g.drawString(String.valueOf(level), level != Game.MAX_LEVEL ? 310 : 250, 420);
@@ -381,6 +409,32 @@ public class UI
 	{
 		// 60 frames == 1 sec
 		return (int)(seconds * 60);
+	}
+	
+	public boolean drawSaveIcon(Graphics g)
+	{
+		final var saveIcon = Game.spritesheet.getSprite(128, 82, 16, 14);
+		Graphics2D g2 = (Graphics2D)g;
+		
+		saveIconFrames++;
+		
+		float percentage = (float)saveIconFrames / secondsToFrames(1.5);
+		
+		if(saveIconFrames < secondsToFrames(1.5))
+		{ g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, percentage)); }
+		
+		else
+		{ 
+			percentage = (float)(saveIconFrames - secondsToFrames(1.5)) / secondsToFrames(1.5);
+			g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f - percentage)); 
+		}
+		
+		if(saveIconFrames == secondsToFrames(3))
+		{ saveIconFrames = 0; }
+		
+		g2.drawImage(saveIcon, 631, 651, 64, 56, null);
+		
+		return saveIconFrames == 0;
 	}
 	
 	public int finalCutscene(Graphics g, int frame)

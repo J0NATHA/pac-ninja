@@ -27,18 +27,6 @@ public class Camera
 				y = 0;
 				return;
 			}
-			case 2:
-			{
-				x = 32;
-				y = 0;
-				return;
-			}
-			case 9:
-			{
-				x = 48;
-				y = 0;
-				return;
-			}
 			default:
 			{
 				Game.player.updateCamera();

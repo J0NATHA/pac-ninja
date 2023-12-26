@@ -13,17 +13,14 @@ public class Spritesheet
 	public Spritesheet(String path)
 	{
 		try
-		{
-			spritesheet = ImageIO.read(getClass().getResource(path));
-		} catch (IOException e)
-		{
-			e.printStackTrace();
-		}
+		{ spritesheet = ImageIO.read(getClass().getResource(path)); }
+		
+		catch (IOException e)
+		{ e.printStackTrace(); }
 	}
 
 	public BufferedImage getSprite(int x, int y, int width, int height)
 	{
 		return spritesheet.getSubimage(x, y, width, height);
 	}
-
 }

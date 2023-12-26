@@ -12,8 +12,8 @@ public class ParticlePickup extends Particle
 	public ParticlePickup(int x, int y, int width, int height, int speed, BufferedImage sprite) 
 	{
 		super(x, y, width, height, speed, sprite);
-		depth = 2;
 		lifeTime = 60;
+		depth = 2;
 	}
 
 	public void tick()

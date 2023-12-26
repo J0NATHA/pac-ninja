@@ -23,11 +23,13 @@ public class Red extends Entity
 	{
 		super(x, y, width, height, speed, sprite);
 
-		sprites = new BufferedImage[4];
-		sprites[0] = Game.spritesheet.getSprite(2, 135, 14, 16);
-		sprites[1] = Game.spritesheet.getSprite(18, 135, 14, 16);
-		sprites[2] = Game.spritesheet.getSprite(67, 135, 14, 16);
-		sprites[3] = Game.spritesheet.getSprite(85, 135, 14, 16);
+		sprites = new BufferedImage[]
+		{
+			Game.spritesheet.getSprite(2, 135, 14, 16),
+			Game.spritesheet.getSprite(18, 135, 14, 16),
+			Game.spritesheet.getSprite(67, 135, 14, 16),
+			Game.spritesheet.getSprite(85, 135, 14, 16)	
+		};
 		
 		depth = 3;
 	}

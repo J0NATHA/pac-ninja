@@ -38,11 +38,8 @@ public class World
 			if(level > Game.MAX_LEVEL)
 			{ level = 1; }
 			
-			level -= 1;
 			while (map == null)
 			{
-				level++;
-
 				try
 				{
 					map = ImageIO.read(getClass().getResource("/levels/level" + level + ".png"));
@@ -50,10 +47,16 @@ public class World
 				} 
 				
 				catch (IOException e)
-				{ continue; } 
+				{ 
+					level++; 
+					continue; 
+				} 
 				
 				catch (IllegalArgumentException e)
-				{ continue; }
+				{ 
+					level++; 
+					continue; 
+				}
 			}
 
 			int[] pixels = new int[map.getWidth() * map.getHeight()];
@@ -353,9 +356,9 @@ public class World
 				{ continue; }
 				
 				Tile tile = tiles[xx + (yy * WIDTH)];
-			
+				
 				try 
-				{ tile.render(g);}
+				{ tile.render(g); }
 				
 				catch(Exception e)
 				{ e.printStackTrace(); }

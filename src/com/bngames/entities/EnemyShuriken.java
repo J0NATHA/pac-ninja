@@ -15,8 +15,7 @@ import com.bngames.world.Vector2i;
 
 public class EnemyShuriken extends Entity
 {
-	private int rotation;
-	private int maskx = 1, masky = 1, maskw = 11, maskh = 11;
+	private int rotation, maskx = 1, masky = 1, maskw = 11, maskh = 11;
 
 	public EnemyShuriken(int x, int y, int width, int height, int speed, BufferedImage sprite)
 	{
@@ -34,10 +33,10 @@ public class EnemyShuriken extends Entity
 
 		}
 
-		if (new Random().nextInt(100) < 25)
+		if(new Random().nextInt(100) < 25)
 		{ followPath(path); }
 		
-		if (new Random().nextInt(100) < 5)
+		if(new Random().nextInt(100) < 5)
 		{
 			Vector2i start = new Vector2i((int) (x / 16), (int) (y / 16));
 			Vector2i end = new Vector2i((int) (Game.player.x / 16), (int) (Game.player.y / 16));
@@ -99,8 +98,6 @@ public class EnemyShuriken extends Entity
 		g.drawImage(getSprite(), getX() - Camera.x, getY() - Camera.y, null);
 		g2.setTransform(zeroTransform);
 		
-//		g.fillRect(getX() + maskx - Camera.x, getY() + masky - Camera.y, maskw, maskh);
 		animate(); 
 	}
-
 }
