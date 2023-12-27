@@ -25,9 +25,9 @@ public class Player extends Entity
 				orbFrames, orbIndex, orbMax = 3, invFrames, crushTime, maxCrushTime = 35,
 				life = 2, soundFrames;
 	
-	public boolean crushOrb, superHealth;
+	public static boolean superHealth;
 	
-	public boolean right, up, left, down, changedDir, isDamaged, hitWall, sneak;
+	public boolean crushOrb, right, up, left, down, changedDir, isDamaged, hitWall, sneak;
 	
 	public BufferedImage[] upDir, downDir, leftDir, rightDir, orbCrush, wallHold;
 	public BufferedImage deadSprite;

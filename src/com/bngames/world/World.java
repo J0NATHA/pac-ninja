@@ -28,6 +28,7 @@ public class World
 	public static int WIDTH, HEIGHT;
 	public static final int TILE_SIZE = 16;
 	private static ArrayList<Orb> orbsBoss = new ArrayList<Orb>();
+	private ArrayList<Vector2i> spawnPoints = new ArrayList<Vector2i>();
 
 	public World(int level)
 	{
@@ -141,8 +142,17 @@ public class World
 					else if (pixelAtual == 0xFF4800FF)
 					{
 //						Player
-						Game.player.setX(xx * 16);
-						Game.player.setY(yy * 16);
+						if(level == Game.MAX_LEVEL)
+						{
+							var position = new Vector2i(xx * 16, yy * 16);
+							if(!spawnPoints.contains(position))
+							{ spawnPoints.add(position); }	
+						}
+						else
+						{
+							Game.player.setX(xx * 16);
+							Game.player.setY(yy * 16);	
+						}
 					}
 					else if (pixelAtual == 0xFFFFD800)
 					{
@@ -200,8 +210,9 @@ public class World
 									Game.enemies.add(en);
 								}
 								if (Game.enemies.size() == 1)
-									Game.spawnEnemies = false;
-							} else if (Red.curLife == 2 && Game.enemies.size() < 2)
+								{ Game.spawnEnemies = false; }
+							}
+							else if (Red.curLife == 2 && Game.enemies.size() < 2)
 							{
 								if (new Random().nextInt(100) < 50)
 								{
@@ -209,17 +220,20 @@ public class World
 									Game.entities.add(en);
 									Game.enemies.add(en);
 								}
+								
 								if (Game.enemies.size() == 2)
-									Game.spawnEnemies = false;
-							} else if (Red.curLife == 1 && Game.enemies.size() < 2)
+								{ Game.spawnEnemies = false; }	
+							}
+							else if (Red.curLife == 1 && Game.enemies.size() < 2)
 							{
 								if (new Random().nextInt(100) < 50)
 								{
 									EnemySpectre en = new EnemySpectre(xx * 16, yy * 16, 16, 16, 1, Entity.ENEMY_EN);
 									Game.entities.add(en);
 									Game.enemies.add(en);
+									
 									if (Game.enemies.size() == 3)
-										Game.spawnEnemies = false;
+									{ Game.spawnEnemies = false; }
 								}
 							}
 						}
@@ -230,12 +244,7 @@ public class World
 						int index = new Random().nextInt(2);
 						tiles[xx + (yy * WIDTH)] = new FloorTile(xx * 16, yy * 16, Tile.TILE_FLOOR2[index]);
 					}
-					else if (pixelAtual == 0xFF00FFFF)
-					{
-						Entity en = new Red(xx * 16, yy * 16, 16, 16, 1, Entity.ENEMY_EN);
-						Game.entities.add(en);
-					}
-
+					
 					if (Game.curLevel == Game.MAX_LEVEL)
 					{
 						int chance =(int)((1.1 - ((double)Red.curLife / Red.maxLife)) * 100);
@@ -251,6 +260,12 @@ public class World
 			
 			if(Game.curLevel == Game.MAX_LEVEL)
 			{
+				if(Game.gameState.equals("NORMAL"))
+				{ spawnPlayerAndBoss(); }
+				else
+				{ spawnPlayerAndBoss(2, 1); }
+				
+				// Spawning Orbs
 				while(Game.orbContagem < 20)
 				{
 					for(Orb orb : orbsBoss)
@@ -265,37 +280,67 @@ public class World
 						{ break; }
 					}
 				}
+				orbsBoss.clear();
 			}
 		} 
 		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
-
+		{ e.printStackTrace(); }
+	}
+	
+	private void spawnPlayerAndBoss()
+	{
+		// Spawning player
+		int playerSpawnIndex = new Random().nextInt(spawnPoints.size());
+		Vector2i playerPosition = spawnPoints.get(playerSpawnIndex);
+		
+		Game.player.setX(playerPosition.x);
+		Game.player.setY(playerPosition.y);
+		
+		// Spawning boss
+		int bossSpawnIndex;
+		
+		// Ensuring the spawnpoints differ
+		do
+		{  bossSpawnIndex = new Random().nextInt(spawnPoints.size()); } 
+		while(bossSpawnIndex == playerSpawnIndex);
+		
+		Vector2i bossPosition = spawnPoints.get(bossSpawnIndex);		  
+				
+		Red red = new Red(bossPosition.x, bossPosition.y, 16, 16, 1, null);
+		Game.entities.add(red);
+	}
+	
+	private void spawnPlayerAndBoss(int playerSpawnIndex, int bossSpawnIndex)
+	{
+		// Spawning player
+		Vector2i playerPosition = spawnPoints.get(playerSpawnIndex);
+		
+		Game.player.setX(playerPosition.x);
+		Game.player.setY(playerPosition.y);
+		
+		// Spawning boss
+		Vector2i bossPosition = spawnPoints.get(bossSpawnIndex);		  
+				
+		Red red = new Red(bossPosition.x, bossPosition.y, 16, 16, 1, null);
+		Game.entities.add(red);
 	}
 
 	public static void generateParticle(int amount, int x, int y)
 	{
 		for (int i = 0; i < amount; i++)
-		{
-			Game.entities.add(new Particle(x, y, 1, 1, 4, null));
-		}
+		{ Game.entities.add(new Particle(x, y, 1, 1, 4, null)); }
 	}
 	
 	public static void generatePickupParticle(int amount, int x, int y)
 	{
 		for (int i = 0; i < amount; i++)
-		{
-			Game.entities.add(new ParticlePickup(x, y, 2, 2, 1, null));
-		}
+		{ Game.entities.add(new ParticlePickup(x, y, 2, 2, 1, null)); }
 	}
 
 	public static void generateParticleBossHealth(int amount, int x, int y)
 	{
 		for (int i = 0; i < amount; i++)
-		{
-			Game.entities.add(new ParticleBossHealth(x, y, 3, 3, 1, null));
-		}
+		{ Game.entities.add(new ParticleBossHealth(x, y, 3, 3, 1, null)); }
 	}
 	
 	private void add(ArrayList<Integer> surroundingPixels, int[] pixels, int position)

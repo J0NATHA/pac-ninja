@@ -99,17 +99,16 @@ public class Sound
 	public Clips pickupSuperHealth = load("/pickupSuperHealth.wav", 1);
 	public Clips keys = load("/keys.wav", 1);
 	public Clips start = load("/start.wav", 1);
-	public Clips sad1 = load("/sad1.mp3", 1);
 	public Clips boss1 = load("/boss1.wav", 1);
 	public Clips bossound2 = load("/bossound2.wav", 1);
 	public Clips bossound3 = load("/bossound3.wav", 1);
 	public Clips scream = load("/scream.wav", 1);
 	public Clips portal = load("/portal.wav", 1);
-	
+
 	// Music is static to avoid multiple instances which created overlapping audio
-	public static Clips bgm = load("/music1.wav", 1);
-	public static Clips boss_opening = load("/boss_opening.wav", 1);
-	public static Clips boss_loop = load("/boss_loop.wav", 1);
+	public static Clips bgm = load("/the_projects1.wav", 1);
+	public static Clips boss_opening = load("/Cyberpunk Moonlight Sonata v2 opening.wav", 1);
+	public static Clips boss_loop = load("/Cyberpunk Moonlight Sonata v2 loop.wav", 1);
 	
 	private static Clips load(String name, int count)
 	{
@@ -137,13 +136,10 @@ public class Sound
 		catch (Exception e)
 		{
 			try
-			{
-				return new Clips(null, 0, false);
-			}
+			{ return new Clips(null, 0, false); }
+			
 			catch (Exception ee)
-			{
-				return null;
-			}
+			{ return null; }
 		}
 	}
 }

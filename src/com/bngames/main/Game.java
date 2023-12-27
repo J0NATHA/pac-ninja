@@ -110,9 +110,11 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		world = new World(curLevel);
 		ui = new UI();
 		
-		spacebar = new BufferedImage[2];
-		spacebar[0] = spritesheet.getSprite(101, 116, 40, 11);
-		spacebar[1] = spritesheet.getSprite(59, 116, 40, 11);
+		spacebar = new BufferedImage[]
+		{
+			spritesheet.getSprite(101, 116, 40, 11),
+			spritesheet.getSprite(59, 116, 40, 11)
+		};
 		
 		red = new Red(0, 0, 14, 16, 1, null);
 		
@@ -182,6 +184,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			
 			if(sceneFrames >= 60)
 			{
+				saving = true;
 				SaveGame.saveLevel(String.valueOf(curLevel));
 				SaveGame.saveBossDefeated();
 				sceneFrames = 0;
@@ -223,7 +226,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			if (musicFrames == 1)
 			{ Sound.boss_opening.play(); }
 			
-			if(musicFrames == 2370)
+			if(musicFrames == 60 * 40 - 1)
 			{
 				Sound.boss_opening.terminate();
 				Sound.boss_loop.loop();
@@ -257,7 +260,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			if (Game.orbAtual == Game.orbContagem && curLevel != MAX_LEVEL)
 			{
 				if (Game.orbsPicked == 20)
-				{ player.superHealth = true; }
+				{ Player.superHealth = true; }
 				
 				gameState = "TRANSITION";
 			}
@@ -288,10 +291,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			nextlvlFrames++;
 			
 			if(nextlvlFrames == 1)
-			{
-				fadeToBlack = true; 
-				
-			}
+			{ fadeToBlack = true; }
 			
 			if (nextlvlFrames == 60)
 			{ 
@@ -316,7 +316,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 				
 				if(damagePlayer)
 				{
-					player.superHealth = false;
+					Player.superHealth = false;
 					--player.life; 
 					damagePlayer = false;
 				}
@@ -370,7 +370,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 				
 				bossTimerFrames = 0;
 			}
-			if (bossTimer == 20 - (Red.maxLife - Red.curLife))
+			if (bossTimer == 20 - (Red.maxLife - Red.curLife) / 2)
 			{
 				randomize = true;
 				damagePlayer = true;
@@ -426,7 +426,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			e.render(g);
 		}
 
-		if (redScreen)
+		if(redScreen)
 		{
 			g.setColor(new Color(250, 0, 0, 200));
 			g.fillRect(0, 0, Game.WIDTH, Game.HEIGHT);
@@ -445,7 +445,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			g.drawString("Pac-Ninja", (Game.WIDTH) / 2 - 26, (Game.HEIGHT) / 2 - 28);
 		}
 
-		if (curLevel == MAX_LEVEL && gameState == "NORMAL")
+		if (curLevel == MAX_LEVEL && (gameState == "NORMAL" || gameState.equals("PAUSE")))
 		{
 			spawnEnemies = true;
 			g.setColor(Color.white);
@@ -456,7 +456,6 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		if (gameState == "PAUSE")
 		{
 			pauseFrames++;
-			
 			if (pauseFrames > 30)
 			{
 				g.setColor(Color.gray);
@@ -776,16 +775,18 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			g.drawString(GAME_VERSION, 10, Game.HEIGHT * SCALE - 18);
 			g.drawString("Made by J0NATHA", 540, Game.HEIGHT * SCALE - 18);
 			 
-			space = ui.animateSpaceBar(g, space, spacebar, 273, 500, 2.3);
-			 
+			space = ui.animateSpaceBar(g, space, spacebar, 273, 500, 2.3);	 
 		}
-
-		if (curLevel == MAX_LEVEL && gameState == "NORMAL")
+		
+		if(curLevel == MAX_LEVEL)
 		{
-			g.setColor(Color.black);
-			g.setFont(new Font("consolas", Font.BOLD, 26));
-			g.drawString("RedNinja", 295, 52);
+			if(gameState.equals("SCENE2"))
+			{ ui.drawBossName(g, bossFrames); }
+			
+			else if(gameState.equals("NORMAL") || gameState.equals("PAUSE"))
+			{ ui.drawBossName(g); }
 		}
+		
 
 		if (gameState == "END")
 		{
@@ -794,35 +795,41 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 
 			g.setColor(Color.black);
 			g.fillRect(0, 0, WIDTH * SCALE, HEIGHT * SCALE);
+			g.setFont(new Font("consolas", Font.LAYOUT_LEFT_TO_RIGHT, 26));
 
-			if (sceneFrames > 30 && sceneFrames < 250)
+			if(sceneFrames < 250)
 			{
 				g.setColor(Color.green);
-				g.setFont(new Font("consolas", Font.LAYOUT_LEFT_TO_RIGHT, 26));
 				g.drawString("To be continued...", WIDTH - 20, HEIGHT + 100);
 			}
-			if (sceneFrames >= 250 && sceneFrames < 470)
+			else if(sceneFrames < 470)
 			{
 				g.setColor(Color.white);
-				g.setFont(new Font("consolas", Font.LAYOUT_LEFT_TO_RIGHT, 26));
 				g.drawString("Created by Jonatha Menezes", WIDTH - 70, HEIGHT + 100);
-				g.drawString("https://j0natha.itch.io/", WIDTH - 70, HEIGHT + 140);
+				g.drawString("(https://j0natha.itch.io/)", WIDTH - 70, HEIGHT + 140);
 			}
-			if (sceneFrames >= 470 && sceneFrames < 760)
+			else if(sceneFrames < 760)
 			{
 				g.setColor(Color.white);
-				g.setFont(new Font("consolas", Font.LAYOUT_LEFT_TO_RIGHT, 26));
-				g.drawString("Cyberpunk Moonlight Sonata", 180, HEIGHT + 100);
-				g.drawString("(Boss theme) by Joth", 180, HEIGHT + 130);
+				g.drawString("SFX", WIDTH + 100, HEIGHT + 60);
+				g.drawString("Sound effects made with sfxr", WIDTH - 85, HEIGHT + 100);
+				g.drawString("\"Cyberpunk Moonlight Sonata\" by Joth", WIDTH - 135, HEIGHT + 140);
+				g.drawString("\"The Projects\" by Alex McCulloch", WIDTH - 115, HEIGHT + 180);				
 			}
-			if (sceneFrames >= 760)
+			else if(sceneFrames < 980)
 			{
 				g.setColor(Color.white);
-				g.setFont(new Font("consolas", Font.LAYOUT_LEFT_TO_RIGHT, 26));
-				g.drawString("Thank you for playing.", WIDTH - 50, HEIGHT + 100);
+				g.drawString("GFX", WIDTH + 100, HEIGHT + 60);
+				g.drawString("Jonatha Menezes", WIDTH + 15, HEIGHT + 100);
 			}
-			if (sceneFrames >= 900)
-			{ System.exit(1); }
+			else
+			{
+				g.setColor(Color.white);
+				g.drawString("Thank you for playing.", WIDTH - 40, HEIGHT + 100);
+			}
+			
+			if (sceneFrames >= 1200)
+			{ System.exit(0); }
 		}
 		if(gameState.equals("LEVEL_SELECT_CHANGED"))
 		{
@@ -859,7 +866,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 	{
 		long lastTime = System.nanoTime();
 		double amountofTicks = 60.0;
-		double ns = 1000000000 / amountofTicks;
+		double ns = 1_000_000_000 / amountofTicks;
 		double delta = 0;
 
 		double timer = System.currentTimeMillis();
@@ -877,10 +884,10 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 				frames++;
 				delta--;
 			}
+			
 			if (System.currentTimeMillis() - timer >= 1000)
 			{
-				// System.out.println("FPS: "+frames);
-
+				//System.out.println("FPS: " + frames);
 				frames = 0;
 				timer += 1000;
 			}
@@ -1049,6 +1056,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 	@Override
 	public void keyReleased(KeyEvent e)
 	{
+		if(e.getKeyCode() == KeyEvent.VK_SPACE) orbsPicked = 20;
 		if(e.getKeyCode() == KeyEvent.VK_SHIFT)
 		{ player.sneak = false; }
 		

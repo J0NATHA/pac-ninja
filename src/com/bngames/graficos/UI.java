@@ -20,10 +20,13 @@ import com.bngames.world.Camera;
 public class UI
 {
 	private int framesSplashScreen, saveIconFrames;
+	private float bossNameVisibility;
+	private BufferedImage splashImage;
 
 	public void render(Graphics g)
 	{
 		Graphics2D g2 = (Graphics2D) g;
+		var composite = g2.getComposite();
 		int y = 44;
 		
 		if (Game.curLevel != Game.MAX_LEVEL)
@@ -33,12 +36,11 @@ public class UI
 			int alpha = distance < 30 ? 100 : 255;			
 			double completionPercentage = (double) Game.orbAtual / Game.orbContagem;
 			int arcAngle = - (int)(completionPercentage * 360);
-			var composite = g2.getComposite();
+			
 			
 			g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha / 255.0f));
 			g.setColor(new Color(0, 0, 0, 150));
 			g.fillArc(10, 10, 100, 100, 90, 360);
-			g2.setComposite(composite);
 			
 			g.setColor(new Color(0, 255, 0, alpha));
 			g.fillArc(10, 10, 100, 100, 90, arcAngle);
@@ -51,7 +53,8 @@ public class UI
 		{ y = 30; }
 				
 		g2.drawImage(Entity.ORB_HUD, 44, y, 32, 32, null);
-
+		
+		
 		double imagePercentage = (double)Game.orbsPicked / 20;
 		int height = (int)(imagePercentage * 8);
 		
@@ -60,6 +63,7 @@ public class UI
 			final BufferedImage ORB_SPRITE = Game.spritesheet.getSprite(67, 3, 8, height);
 			g.drawImage(ORB_SPRITE, 44, y, 32, 4 * height, null);
 		}
+		g2.setComposite(composite);
 	}
 	
 	public boolean animateLevelIntro(Graphics g, int frame)
@@ -117,6 +121,11 @@ public class UI
 		return current > max ? max : current < min ? min : current;
 	}
 	
+	private float clamp(float current, float min, float max)
+	{
+		return current > max ? max : current < min ? min : current;
+	}
+	
 	public int animateSpaceBar(Graphics g, int space, BufferedImage[] spacebar)
 	{
 		int SCALE = Game.SCALE;
@@ -163,18 +172,52 @@ public class UI
 
 	public void renderBoss(Graphics g)
 	{
-		if (Game.curLevel == Game.MAX_LEVEL)
-		{
-			g.setColor(Color.black);
-			g.drawRoundRect(44, 9, Red.maxLife * 30 + 1, 10, 2, 2);
-			g.setColor(Color.red);
-			
-			if (Game.player.crushOrb)
-			{ g.setColor(Color.green); }
-			
-			g.fillRoundRect(45, 10, Red.curLife * 30, 9, 1, 1);
-			g.setColor(Color.black);
-		}
+		if (Game.curLevel != Game.MAX_LEVEL)
+		{ return; }
+		
+		Graphics2D g2 = (Graphics2D)g;
+		var composite = g2.getComposite();
+		double distance = Math.abs(10 - Game.player.getY() - Camera.y);
+		float visibility = (float)distance / 25;
+		
+		visibility = clamp(visibility, 0.25f, 1f);
+		bossNameVisibility = visibility;
+		
+		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, visibility));
+		
+		g.setColor(Color.black);
+		g.drawRoundRect(44, 9, Red.maxLife * 30 + 1, 10, 2, 2);
+		g.setColor(Color.red);
+		
+		if (Game.player.crushOrb)
+		{ g.setColor(Color.green); }
+		
+		g.fillRoundRect(45, 10, Red.curLife * 30, 9, 1, 1);
+		g.setColor(Color.black);
+		
+		g2.setComposite(composite);
+	}
+	
+	public void drawBossName(Graphics g, int frame)
+	{
+		Graphics2D g2 = (Graphics2D)g;
+		var composite = g2.getComposite();
+		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, frame / 180.0f));
+		
+		g.setColor(Color.black);
+		g.setFont(new Font("consolas", Font.BOLD, 26));
+		g.drawString("RedNinja", 295, 52);
+		
+		g2.setComposite(composite);
+	}
+	
+	public void drawBossName(Graphics g)
+	{	
+		Graphics2D g2 = (Graphics2D)g;
+		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, bossNameVisibility));
+		g.setColor(Color.black);
+		g.setFont(new Font("consolas", Font.BOLD, 26));
+		g.drawString("RedNinja", 295, 52);
 	}
 
 	public void drawLevelSelectMenu(Graphics g, int level)
@@ -323,7 +366,11 @@ public class UI
 		
 		g.setColor(new Color(200, 200, 200));
 		g.fillRect(0, 0, Game.WIDTH * Game.SCALE, Game.HEIGHT * Game.SCALE);
-		drawLogo(g);
+		
+		if(framesSplashScreen == 1)
+		{ setLogo(g); }
+
+		g.drawImage(splashImage, Game.WIDTH / 2, Game.HEIGHT / 2, 480, 480, null);
 	
 		if(framesSplashScreen < secondsToFrames(1.8))
 		{ fadeBlack(g, framesSplashScreen, 1.8, false); }
@@ -375,7 +422,7 @@ public class UI
 		g.fillRect(0, 0, Game.WIDTH * Game.SCALE, Game.HEIGHT * Game.SCALE);
 	}
 	
-	private void drawLogo(Graphics g)
+	private void setLogo(Graphics g)
 	{
 		try
 		{
@@ -387,18 +434,7 @@ public class UI
 			if(Game.finished)
 			{ path = "/LogoCompleted.png"; }
 			
-			final BufferedImage logo = ImageIO.read(getClass().getResource(path));
-			
-			final int logoSize = 480;
-			
-			g.drawImage(
-					logo, 
-					(int)(Game.WIDTH * .5),
-					(int)(Game.HEIGHT * .5),
-					logoSize,
-					logoSize,
-					null
-			);
+			splashImage = ImageIO.read(getClass().getResource(path));
 		}
 		
 		catch(Exception e)
