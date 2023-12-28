@@ -27,7 +27,7 @@ public class Player extends Entity
 	
 	public static boolean superHealth;
 	
-	public boolean crushOrb, right, up, left, down, changedDir, isDamaged, hitWall, sneak;
+	public boolean crushOrb, right, up, left, down, changedDir, isDamaged, hitWall;
 	
 	public BufferedImage[] upDir, downDir, leftDir, rightDir, orbCrush, wallHold;
 	public BufferedImage deadSprite;
@@ -111,13 +111,7 @@ public class Player extends Entity
 		{ superHealth(); }
 
 		if (!isDamaged)
-		{
-			if (sneak)
-			{ speed = 0.25; } 
-			
-			else
-			{ speed = 1; }
-		}
+		{ speed = 1; }
 		
 		if (crushOrb && Game.orbsPicked > 0)
 		{ Game.orbsPicked--; }
@@ -563,7 +557,7 @@ public class Player extends Entity
 						blackoutFrames = 0;
 						crushOrb = false;
 						
-						if (Game.curLevel != Game.MAX_LEVEL && life == 1)
+						if(life == 1)
 						{ life++; }
 						
 						orbIndex = 0;

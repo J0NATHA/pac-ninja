@@ -98,7 +98,7 @@ public class Red extends Entity
 		{
 			g.drawImage(sprites[spriteIndex], this.getX() - Camera.x, this.getY() - Camera.y, null);
 			
-			if (Game.gameState != "SCENE3")
+			if (Game.gameState != "SCENE3" && !Game.gameState.equals("PAUSE"))
 			{ animate(); }
 		}
 		

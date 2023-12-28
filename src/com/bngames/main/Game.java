@@ -46,18 +46,18 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 	private Color keysColor;
 	
 	private boolean isRunning = true, tutUp, tutDown, tutLeft, tutRight, 
-					tutBar, tutShift, tutCdown, redScreen, damagePlayer, saving;
+					tutBar, tutCdown, redScreen, ranOutOfTime, saving;
 	public static boolean randomize, hideSprite, spawnEnemies, restartGame, fadeToBlack, finished,
 							superHealthNextLevel;
 	public boolean saveGame, spawnBlue, npcSpawn, showMessageGameOver, fadeFromBlack, fadeMenu,
-					eraseSaveHold;
+					qKeyHold;
 	
 	private int framesGameOver, bossFrames, randFrames, blackoutFrames, nextlvlFrames,
 				pauseFrames, musicFrames, tut, initFrames, playerHealth;
 	
 	public int frames;
 	public static int orbContagem = 0, orbAtual = 0, orbsPicked = 0, redFrames = 0, 
-					  bossTimer = 0, bossTimerFrames = 0, sceneFrames = 0, curLevel, eraseSaveFrames;
+					  bossTimer = 0, bossTimerFrames = 0, sceneFrames = 0, curLevel, qKeyFrames;
 	
 	public static final int MAX_LEVEL = 10, WIDTH = 240, HEIGHT = 240, SCALE = 3;
 	
@@ -194,11 +194,11 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		
 		if(gameState.equals("LEVEL_SELECT"))
 		{ 
-			if(eraseSaveHold)
+			if(qKeyHold)
 			{ 
-				eraseSaveFrames = eraseSaveFrames < 120 ? eraseSaveFrames + 1 : eraseSaveFrames;
+				qKeyFrames = qKeyFrames < 120 ? qKeyFrames + 1 : qKeyFrames;
 				
-				if(eraseSaveFrames == 120)
+				if(qKeyFrames == 120)
 				{
 					SaveGame.eraseSave();
 					System.exit(0);
@@ -206,23 +206,30 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			}
 			
 			else
-			{ 
-				eraseSaveFrames = eraseSaveFrames > 0 ? eraseSaveFrames - 2 : 
-				eraseSaveFrames < 0 ? eraseSaveFrames + 1 : eraseSaveFrames; 
-			}
+			{ qKeyFrames = qKeyFrames > 8 ? qKeyFrames - 8 : 0; }
 		}
 
-		if (curLevel != MAX_LEVEL && !gameState.equals("SPLASH_SCREEN") || gameState.equals("MENU"))
-		{ Sound.bgm.loop(); } 
+		List<String> statesBgm = new ArrayList<String>(
+				Arrays.asList("MENU", "LEVEL_SELECT", "LEVEL_SELECT_CHANGED") );
 		
-		List<String> states = new ArrayList<String>(
+		List<String> statesBoss = new ArrayList<String>(
 				Arrays.asList("SCENE1", "SCENE2", "NORMAL", "PAUSE", "GAME_OVER") );
 		
-		if(curLevel == MAX_LEVEL && (states.contains(gameState) 
-				|| SaveGame.latestCompletedLevel() < MAX_LEVEL))
+		if (curLevel != MAX_LEVEL && !gameState.equals("SPLASH_SCREEN") 
+				|| statesBgm.contains(gameState))
+		{ 
+			musicFrames = 0;
+
+			Sound.bgm.loop();
+			Sound.boss_opening.terminate();
+			Sound.boss_loop.terminate();
+		} 
+		
+		else if(curLevel == MAX_LEVEL && 
+			(statesBoss.contains(gameState) || SaveGame.latestCompletedLevel() < MAX_LEVEL))
 		{
 			musicFrames++;
-			
+
 			if (musicFrames == 1)
 			{ Sound.boss_opening.play(); }
 			
@@ -301,6 +308,34 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 				gameState = "SCENE3";
 			}
 		}
+		
+		if(gameState.equals("PAUSE") && SaveGame.latestCompletedLevel() != Game.MAX_LEVEL - 1) 
+		{		
+			if(qKeyFrames != 90)
+			{
+				if(qKeyHold)
+				{ qKeyFrames = qKeyFrames < 90 ? qKeyFrames + 1 : qKeyFrames; }
+				
+				else
+				{ qKeyFrames = qKeyFrames > 9 ? qKeyFrames - 9 : 0; }
+			}
+			else
+			{		
+				nextlvlFrames++;
+				if(nextlvlFrames == 1)
+				{ fadeToBlack = true; }
+				
+				if(nextlvlFrames == 60)
+				{ 
+					World.restartGame(curLevel);
+					Camera.place(curLevel);
+					fadeFromBlack = true;
+					nextlvlFrames = 0;
+					qKeyFrames = 0;
+					gameState = "LEVEL_SELECT";
+				}
+			}
+		}
 	}
 
 	public void randomize()
@@ -309,32 +344,28 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		{
 			randFrames++;
 			
+			if(randFrames == 1)
+			{
+				if(ranOutOfTime)
+				{
+					Player.superHealth = false;
+					player.life--; 
+					ranOutOfTime = false;
+				}
+				
+				else if(superHealthNextLevel)
+				{ player.life = 3; }
+				
+				playerHealth = player.life;
+			}
+			
 			if(randFrames == 30)
 			{ 
 				Sound.get().bossound2.play();
 				Sound.get().hit.play();
 				
-				if(damagePlayer)
-				{
-					Player.superHealth = false;
-					--player.life; 
-					damagePlayer = false;
-				}
-				
-				else if(player.life < 3)
-				{ 
-					if(superHealthNextLevel)
-					{ player.life = 3; } 
-					
-					else
-					{ player.life++; } 
-				}
-				
-				
 				if(playerHealth == 0)
 				{ bossFrames = 0; }
-				
-				playerHealth = player.life;
 			}
 			
 			if(randFrames > 30 && randFrames < 60)
@@ -351,7 +382,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 				player.life = playerHealth;
 				randomize = false;
 				redScreen = false;
-				damagePlayer = false;
+				ranOutOfTime = false;
 				randFrames = 0;
 			}
 		}
@@ -373,7 +404,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			if (bossTimer == 20 - (Red.maxLife - Red.curLife) / 2)
 			{
 				randomize = true;
-				damagePlayer = true;
+				ranOutOfTime = true;
 			}
 		}
 	}
@@ -442,7 +473,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			g.fillRect(90, 81, 60, 14);
 			g.setFont(new Font("arial", Font.CENTER_BASELINE, 12));
 			g.setColor(Color.green);
-			g.drawString("Pac-Ninja", (Game.WIDTH) / 2 - 26, (Game.HEIGHT) / 2 - 28);
+			g.drawString("Pac-Ninja", 93, 92);
 		}
 
 		if (curLevel == MAX_LEVEL && (gameState == "NORMAL" || gameState.equals("PAUSE")))
@@ -454,24 +485,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		}
 
 		if (gameState == "PAUSE")
-		{
-			pauseFrames++;
-			if (pauseFrames > 30)
-			{
-				g.setColor(Color.gray);
-				g.fillRect(108, 98, 8, 24);
-				g.setColor(Color.white);
-				g.fillRect(110, 100, 4, 20);
-				
-				g.setColor(Color.gray);
-				g.fillRect(118, 98, 8, 24);
-				g.setColor(Color.white);
-				g.fillRect(120, 100, 4, 20);
-			}
-			
-			if (pauseFrames == 60)
-			{ pauseFrames = 0; }
-		}
+		{ pauseFrames = ui.drawPauseScreen(g, pauseFrames); }
 		
 		// Level intro
 		if (gameState == "SCENE1")
@@ -578,9 +592,8 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			if (bossFrames == 180)
 			{
 				randomize = true;
-				
-				if (Red.curLife == Red.maxLife)
-				{ gameState = "NORMAL"; }
+				bossFrames = 0;
+				gameState = "NORMAL";
 			}
 		}
 		
@@ -610,21 +623,6 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			{ redFrames = 0; }
 		}
 
-		if (fadeToBlack == true || fadeFromBlack == true)
-		{
-			Graphics2D g2 = (Graphics2D) g;
-			blackoutFrames++;
-
-			boolean done = ui.fadeBlack(g2, blackoutFrames, 1, fadeToBlack);
-			
-			if(done)
-			{
-				blackoutFrames = 0;
-				fadeToBlack = false;
-				fadeFromBlack = false;
-			}
-		}
-
 		// SCALE IS DONE HERE
 		g.dispose();
 		g = bs.getDrawGraphics();
@@ -641,7 +639,6 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			g.drawRect(124 * SCALE, 104 * SCALE, 12 * SCALE, 12 * SCALE);
 			g.drawRect(94 * SCALE, 104 * SCALE, 12 * SCALE, 12 * SCALE);
 			g.drawRect(94 * SCALE, 119 * SCALE, 42 * SCALE, 12 * SCALE);
-			g.drawRect(54 * SCALE, 119 * SCALE, 21 * SCALE, 12 * SCALE);
 
 			g.setColor(Color.white);
 			g.drawRect(110 * SCALE, 90 * SCALE, 10 * SCALE, 10 * SCALE);
@@ -649,7 +646,6 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			g.drawRect(125 * SCALE, 105 * SCALE, 10 * SCALE, 10 * SCALE);
 			g.drawRect(95 * SCALE, 105 * SCALE, 10 * SCALE, 10 * SCALE);
 			g.drawRect(95 * SCALE, 120 * SCALE, 40 * SCALE, 10 * SCALE);
-			g.drawRect(55 * SCALE, 120 * SCALE, 19 * SCALE, 10 * SCALE);
 
 			if (tutUp)
 			{
@@ -676,13 +672,6 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 				g.setColor(keysColor);
 				g.fillRect(95 * SCALE, 120 * SCALE, 40 * SCALE, 10 * SCALE);
 			}
-
-			if (tutShift)
-			{
-				g.setColor(keysColor);
-				g.fillRect(55 * SCALE, 120 * SCALE, 19 * SCALE, 10 * SCALE);
-			}
-
 			if (tutCdown)
 			{
 				tut++;
@@ -701,10 +690,8 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 					tutCdown = false;
 					Sound.get().keys.terminate();
 				
-					if (tutUp && tutDown && tutLeft && tutRight && tutBar && tutShift)
-					{
-						gameState = "MENU";
-					}
+					if (tutUp && tutDown && tutLeft && tutRight && tutBar)
+					{ gameState = "MENU"; }
 				}
 			} 
 			else
@@ -738,19 +725,9 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 				
 		if (gameState.equals("NORMAL") || gameState.equals("PAUSE"))
 		{ ui.render(g); }
-
-		if(saving)
-		{ saving = !ui.drawSaveIcon(g); }
 		
-		if (gameState.equals("GAME_OVER"))
-		{
-			if(!fadeToBlack)
-			{
-				g.setColor(Color.black);
-				g.fillRect(0, 0, WIDTH * SCALE, WIDTH * SCALE); 
-			}
-			space = ui.animateSpaceBar(g, space, spacebar, 290, 353, 1);
-		}
+		if(gameState.equals("PAUSE") && SaveGame.latestCompletedLevel() != Game.MAX_LEVEL - 1)
+		{ ui.drawPauseQKey(g); }
 		
 		if (gameState.equals("NORMAL") || gameState.equals("PAUSE"))
 		{
@@ -768,12 +745,11 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 				
 				if(fadeMenu)
 				{ blackoutFrames = 0; }
-			}
-			
+			}			
 			g.setColor(new Color(120, 200, 0));
 			g.setFont(new Font("consolas", Font.BOLD, 20));
-			g.drawString(GAME_VERSION, 10, Game.HEIGHT * SCALE - 18);
-			g.drawString("Made by J0NATHA", 540, Game.HEIGHT * SCALE - 18);
+			g.drawString(GAME_VERSION, 10, 702);
+			g.drawString("Made by J0NATHA", 540, 702);
 			 
 			space = ui.animateSpaceBar(g, space, spacebar, 273, 500, 2.3);	 
 		}
@@ -859,6 +835,35 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 				}
 			}
 		}
+		
+		if (fadeToBlack || fadeFromBlack)
+		{
+			Graphics2D g2 = (Graphics2D) g;
+			blackoutFrames++;
+
+			boolean done = ui.fadeBlack(g2, blackoutFrames, 1, fadeToBlack);
+			
+			if(done)
+			{
+				blackoutFrames = 0;
+				fadeToBlack = false;
+				fadeFromBlack = false;
+			}
+		}
+		
+		if (gameState.equals("GAME_OVER"))
+		{
+			if(!fadeToBlack)
+			{
+				g.setColor(Color.black);
+				g.fillRect(0, 0, WIDTH * SCALE, WIDTH * SCALE); 
+			}
+			space = ui.animateSpaceBar(g, space, spacebar, 290, 353, 1);
+		}
+
+		if(saving)
+		{ saving = !ui.drawSaveIcon(g); }
+		
 		bs.show();
 	}
 
@@ -896,9 +901,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 	}
 
 	@Override
-	public void keyTyped(KeyEvent e)
-	{
-	}
+	public void keyTyped(KeyEvent e) { }
 
 	@Override
 	public void keyPressed(KeyEvent e)
@@ -912,9 +915,6 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 				tutCdown = true;
 			}
 			
-			if (gameState == "PAUSE")
-			{ gameState = "NORMAL"; }
-
 			if(gameState.equals("LEVEL_SELECT") &&
 				curLevel <= SaveGame.latestCompletedLevel() &&
 				curLevel != MAX_LEVEL)
@@ -940,9 +940,6 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 				tutLeft = true;
 			}
 
-			if (gameState == "PAUSE")
-			{ gameState = "NORMAL"; }
-
 			if(gameState.equals("LEVEL_SELECT") && curLevel > 1)
 			{
 				Sound.get().keys.play();
@@ -965,9 +962,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 				tutCdown = true;
 				tutUp = true;
 			}
-			if (gameState == "PAUSE")
-			{ gameState = "NORMAL"; }
-
+			
 			player.lastDirection = player.currentDirection;
 			player.up = true;
 			player.left = false;
@@ -982,9 +977,6 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 				tutCdown = true;
 				tutDown = true;
 			}
-
-			if (gameState == "PAUSE")
-			{ gameState = "NORMAL"; }
 
 			player.lastDirection = player.currentDirection;
 			player.down = true;
@@ -1006,23 +998,15 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			{ player.crushOrb = true; }
 			
 			else if(gameState.equals("LEVEL_SELECT"))
-			{ gameState = "SCENE1"; }
-		}
-
-		if (e.getKeyCode() == KeyEvent.VK_SHIFT)
-		{
-			if(gameState == "TUT" && !tutShift && !tutCdown)
 			{
 				Sound.get().keys.play();
-				tutCdown = true;
-				tutShift = true;
+				gameState = "SCENE1"; 
 			}
-			
-			player.sneak = true;
 		}
 		
-		if(gameState.equals("LEVEL_SELECT") && e.getKeyCode() == KeyEvent.VK_Q)
-		{ eraseSaveHold = true; }
+		if((gameState.equals("LEVEL_SELECT") || gameState.equals("PAUSE"))
+				&& e.getKeyCode() == KeyEvent.VK_Q)
+		{ qKeyHold = true; }
 
 		if(e.getKeyCode() == KeyEvent.VK_ESCAPE)
 		{
@@ -1034,19 +1018,18 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		}
 		
 		else if(e.getKeyCode() != 0)
-		{
-			if (gameState == "PAUSE")
-			{ gameState = "NORMAL"; }
-			
+		{			
 			if (gameState == "MENU")
 			{
-				blackoutFrames = 0;
-				
+				Sound.get().keys.play();
 				gameState = "SCENE1";
 				
 				if(Game.curLevel > 1 && Game.curLevel != Game.MAX_LEVEL || Game.finished)
 				{ gameState = "LEVEL_SELECT"; }
 			}
+			
+			if(e.getKeyCode() != KeyEvent.VK_Q && gameState == "PAUSE")
+			{ gameState = "NORMAL"; }
 
 			if (gameState == "GAME_OVER" && !fadeToBlack)
 			{ Game.restartGame = true; }
@@ -1055,43 +1038,22 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 
 	@Override
 	public void keyReleased(KeyEvent e)
-	{
-		if(e.getKeyCode() == KeyEvent.VK_SPACE) orbsPicked = 20;
-		if(e.getKeyCode() == KeyEvent.VK_SHIFT)
-		{ player.sneak = false; }
-		
-		if(e.getKeyCode() == KeyEvent.VK_E && gameState.equals("LEVEL_SELECT") && finished)
+	{ 
+		if(Game.finished && e.getKeyCode() == KeyEvent.VK_E && gameState.equals("LEVEL_SELECT"))
 		{
 			Sound.get().keys.play();
 			superHealthNextLevel = !superHealthNextLevel; 	
 		}
 		
-		if(gameState.equals("LEVEL_SELECT") && e.getKeyCode() == KeyEvent.VK_Q)
-		{ eraseSaveHold = false; }
+		if((gameState.equals("LEVEL_SELECT") || gameState.equals("PAUSE")) && e.getKeyCode() == KeyEvent.VK_Q)
+		{ qKeyHold = false; }
 	}
 
 	@Override
 	public void mouseClicked(MouseEvent e) { }
 
 	@Override
-	public void mousePressed(MouseEvent e)
-	{
-		if (gameState == "PAUSE")
-		{ gameState = "NORMAL"; }
-
-		if (gameState == "MENU")
-		{ 
-			blackoutFrames = 0;
-			
-			gameState = "SCENE1";
-			
-			if(Game.curLevel > 1 && Game.curLevel != Game.MAX_LEVEL || Game.finished)
-			{ gameState = "LEVEL_SELECT"; }
-		}
-
-		if (gameState == "GAME_OVER" && !fadeToBlack)
-		{ Game.restartGame = true; }
-	}
+	public void mousePressed(MouseEvent e) { }
 
 	@Override
 	public void mouseReleased(MouseEvent e) { }

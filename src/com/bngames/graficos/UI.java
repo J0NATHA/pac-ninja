@@ -228,8 +228,8 @@ public class UI
 		g.setFont(new Font("consolas", Font.BOLD, 28));
 				
 		// Q key background
-		g.setColor(new Color(0, 0, 0, 180));
-		g.fillRect(210, 159, 33, 33);
+		g.setColor(Color.black);
+		g.fillRoundRect(210, 159, 33, 33, 8, 8);
 		
 		g.setColor(Color.red);
 		g.drawString("Q", 218, 182);
@@ -241,10 +241,10 @@ public class UI
 		var trashcanSprite = Game.spritesheet.getSprite(131, 97, 11, 15);
 		g.drawImage(trashcanSprite, 262, 153, 33, 45, null);
 		
-		double trashcanArcPercentage = Game.eraseSaveFrames / 120.0;
+		double trashcanArcPercentage = Game.qKeyFrames / 120.0;
 		int angle = - (int)(trashcanArcPercentage * 360);
-		g.setColor(new Color(255, 0, 0, 170 + (int)(85 * trashcanArcPercentage)));
-		g.fillArc(253, 150, 50, 50, 90, angle);
+		g.setColor(new Color(255, 0, 0, 180 + (int)(75 * trashcanArcPercentage)));
+		g.fillArc(210, 159, 33, 33, 90, angle);
 		
 		g.setColor(new Color(255, 255, 255, 0));
 		g.fillArc(265, 155, 40, 40, 90, 360);
@@ -252,8 +252,8 @@ public class UI
 		if(Game.finished)
 		{	
 			// E key background
-			g.setColor(new Color(0, 0, 0, 180));
-			g.fillRect(417, 159, 33, 33);
+			g.setColor(Color.black);
+			g.fillRoundRect(417, 159, 33, 33, 8, 8);
 			
 			g.setColor(Color.green);
 			g.drawString("E", 425, 184);
@@ -269,7 +269,7 @@ public class UI
 			if(Game.superHealthNextLevel)
 			{ 
 				var checkmarkSprite = Game.spritesheet.getSprite(144, 85, 16, 9); 
-				g.drawImage(checkmarkSprite, 468, 155, 44, 40, null); 
+				g.drawImage(checkmarkSprite, 464, 155, 44, 40, null); 
 			}
 		}
 		
@@ -358,6 +358,46 @@ public class UI
 		g.setColor(new Color(255, blueGreen, blueGreen, 255));
 		g.setFont(new Font("consolas", Font.CENTER_BASELINE, 200));
 		g.drawString(String.valueOf(level), level != Game.MAX_LEVEL ? 310 : 250, 420);
+	}
+	
+	public int drawPauseScreen(Graphics g, int frame)
+	{
+		frame++;
+		
+		if (frame > 30)
+		{
+			// Pause bars animation
+			g.setColor(Color.gray);
+			g.fillRect(108, 98, 8, 24);
+			g.setColor(Color.white);
+			g.fillRect(110, 100, 4, 20);
+			
+			g.setColor(Color.gray);
+			g.fillRect(118, 98, 8, 24);
+			g.setColor(Color.white);
+			g.fillRect(120, 100, 4, 20);
+		}
+		
+		if (frame == 60)
+		{ frame = 0; }
+				
+		return frame;
+	}
+	
+	public void drawPauseQKey(Graphics g)
+	{
+		g.setFont(new Font("consolas", Font.BOLD, 28));
+		g.setColor(Color.black);
+		g.fillRoundRect(337, 377, 33, 33, 8, 8);
+		
+		g.setColor(Color.red);
+		g.drawString("Q", 345, 400);
+		
+		double percentage = Game.qKeyFrames / 90.0;
+		int angle = -(int)(percentage * 360);
+		
+		g.setColor(Color.red);
+		g.fillArc(337, 377, 33, 33, 90, angle);
 	}
 	
 	public boolean drawSplashScreen(Graphics g)
