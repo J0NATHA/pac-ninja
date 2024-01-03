@@ -344,8 +344,21 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		{
 			randFrames++;
 			
-			if(randFrames == 1)
+			var currentTimeLimit = 20 - (Red.maxLife - Red.curLife);
+			// Cancel boss attack if the player manages to get the time down
+			if(ranOutOfTime && bossTimer < currentTimeLimit)
 			{
+				randomize = false;
+				redScreen = false;
+				ranOutOfTime = false;
+				randFrames = 0;
+			}
+			
+			if(randFrames == 30)
+			{ 
+				Sound.get().bossound2.play();
+				Sound.get().hit.play();
+				
 				if(ranOutOfTime)
 				{
 					Player.superHealth = false;
@@ -357,12 +370,6 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 				{ player.life = 3; }
 				
 				playerHealth = player.life;
-			}
-			
-			if(randFrames == 30)
-			{ 
-				Sound.get().bossound2.play();
-				Sound.get().hit.play();
 				
 				if(playerHealth == 0)
 				{ bossFrames = 0; }
@@ -390,6 +397,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 
 	public void countdown()
 	{
+		var currentTimeLimit = 20 - (Red.maxLife - Red.curLife);
 		if (gameState == "NORMAL")
 		{
 			bossTimerFrames++;
@@ -401,7 +409,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 				
 				bossTimerFrames = 0;
 			}
-			if (bossTimer == 20 - (Red.maxLife - Red.curLife) / 2)
+			if (bossTimer == currentTimeLimit)
 			{
 				randomize = true;
 				ranOutOfTime = true;
